@@ -12,6 +12,7 @@
     "emitDecoratorMetadata": true,
     "noEmit": false,
     "strict": false,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,

@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { Text, Switch, Label, Button, IconButton, Checkbox, Heading, Select, Tooltip, Badge } from "@medusajs/ui";
+import { Text, Switch, Label, Button, IconButton, Checkbox, Heading, Tooltip, Badge } from "@medusajs/ui";
 import { Adjustments, ExclamationCircle } from "@medusajs/icons"
 import { Grid } from "@mui/material";
 import { DateLasts, OrderStatus } from "../utils/types";
@@ -176,9 +176,7 @@ export const DropdownOrderStatus = ({onOrderStatusChange, appliedStatuses} : {on
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Label className="gap-x-2" style={ { paddingLeft: 8, paddingBottom: 8}}>
-        <Heading level='h3'>
-          Choose orders
-        </Heading>
+        <h3>Choose orders</h3>
       </DropdownMenu.Label>
       {Object.values(OrderStatus).map(orderStatus => (
         <DropdownMenu.Item className="gap-x-2" onSelect={event => event.preventDefault()} key={orderStatus.toString()}>
@@ -213,29 +211,12 @@ export const SelectDateLasts = ({dateLast, onSelectChange} : {dateLast: DateLast
 
   return (
     <div className="w-[170px]">
-      <Select size="small" onValueChange={onSelectChange} value={dateLast}>
-        <Select.Trigger style={ { height: '2rem'}}>
-          <Select.Value placeholder="Select a date range" />
-        </Select.Trigger>
-        <Select.Content>
-          {dateLastsToSelect.map((dateToSelect) => (
-            <Select.Item key={dateToSelect} value={dateToSelect}>
-              {dateToSelect == DateLasts.All ? (
-                <Grid container spacing={1}>
-                  <Grid item>
-                    {dateToSelect}
-                  </Grid>
-                  <Grid item>
-                    <Tooltip content='If you have many orders, it might take a while to load statistics.'>
-                      <ExclamationCircle />
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-              ) : dateToSelect}
-            </Select.Item>
-          ))}
-        </Select.Content>
-      </Select>
+      <select className="medusa-select medusa-select--small" onChange={onSelectChange} value={dateLast}>
+        <option value="LastWeek">Last Week</option>
+        <option value="LastMonth">Last Month</option>
+        <option value="LastYear">Last Year</option>
+        <option value="All">All</option>
+      </select>
     </div>
   )
 }

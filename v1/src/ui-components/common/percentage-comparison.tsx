@@ -17,10 +17,8 @@ export const PercentageComparison = ({current, label, previous, headingLevel = "
   const percentage: number | undefined = calculatePercentage(parseInt(current), parseInt(previous));
   return (
     <Tooltip content={`Previously: ${previous} ${label}`}>
-      <span>
-          <Heading level={headingLevel} style={ { textDecorationStyle: 'dotted', textDecorationLine: 'underline', textUnderlineOffset: '3px'}}>
-            {percentage !== undefined ? `${percentage}%` : `N/A`}
-          </Heading>
+      <span style={{ textDecorationStyle: 'dotted', textDecorationLine: 'underline', textUnderlineOffset: '3px'}}>
+        <h3>{label}</h3>
       </span>
     </Tooltip>
   )

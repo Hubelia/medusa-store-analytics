@@ -161,10 +161,7 @@ export const OutOfTheStockVariantsModal = () => {
   const [open, setOpen] = useState(false)
 
   return (
-    <FocusModal
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <FocusModal>
       <FocusModal.Trigger asChild>
         <Button size="small" variant="secondary">See all</Button>
       </FocusModal.Trigger>

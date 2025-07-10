@@ -136,26 +136,26 @@ export const ChartCustomTooltip = ({ active, payload, label, resolutionType }) =
       case ChartResolutionType.DayMonth:
         return (
           <Container>
-            <Heading level="h3" style={ { color: payload[0].color}}>
+            <Text>
               {`${getChartTooltipDate(payload[0].payload.current.date, resolutionType)}`} : {payload[0].payload.current.value}
-            </Heading>
+            </Text>
             {payload[1] !== undefined && 
-              <Heading level="h3" style={ { color: payload[1].color}}>
+              <Text>
                 {`${getChartTooltipDate(payload[1].payload.previous.date, resolutionType)}`} : {payload[1].payload.previous.value}
-              </Heading>
+              </Text>
             }
             </Container>
         )
       case ChartResolutionType.Month:
         return (
           <Container>
-            <Heading level="h3" style={ { color: payload[0].color}}>
+            <Text>
               {`${getChartTooltipDate(payload[0].payload.current.date, resolutionType)}`} : {payload[0].payload.current.value}
-            </Heading>
+            </Text>
             {payload[1] !== undefined && 
-              <Heading level="h3" style={ { color: payload[1].color}}>
+              <Text>
                 {`${getChartTooltipDate(payload[1].payload.previous.date, resolutionType)}`} : {payload[1].payload.previous.value}
-              </Heading>
+              </Text>
             }
             </Container>
         )

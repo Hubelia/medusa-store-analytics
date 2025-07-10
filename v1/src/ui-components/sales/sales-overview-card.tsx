@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { Heading, Select, Text, Alert } from "@medusajs/ui";
+import { Heading, Text, Alert } from "@medusajs/ui";
 import { CurrencyDollar } from "@medusajs/icons";
 import { CircularProgress, Grid } from "@mui/material";
 import type { DateRange, OrderStatus } from "../utils/types";
@@ -61,7 +61,7 @@ const SalesDetails = ({orderStatuses, currencyCode, dateRange, dateRangeCompareT
   if (data.analytics == undefined) {
     return (
       <Grid item xs={12} md={12}> 
-        <Heading level="h3">Cannot get orders</Heading>
+        <h3>Cannot get orders</h3>
       </Grid>
     )
   }
@@ -80,7 +80,7 @@ const SalesDetails = ({orderStatuses, currencyCode, dateRange, dateRangeCompareT
   } else {
     return (
       <Grid item xs={12} md={12}> 
-        <Heading level="h3">No orders</Heading>
+        <h3>No orders</h3>
       </Grid>
     )
   }
@@ -106,27 +106,22 @@ export const SalesOverviewCard = ({orderStatuses, dateRange, dateRangeCompareTo,
             </Grid>
             <Grid item>
               <div className="w-[256px]">
-                <Select size="small" onValueChange={setValue} value={value}>
-                  <Select.Trigger>
-                    <Select.Value placeholder="Select a currency" />
-                  </Select.Trigger>
-                  <Select.Content>
-                    {isLoading && <CircularProgress/>}
-                    {regions && !regions.length && <Text>No regions</Text>}
-                    {regions && regions.length > 0 && [...new Set(regions.map(region => region.currency_code))].map((currencyCode) => (
-                      <Select.Item key={currencyCode} value={currencyCode}>
-                        {currencyCode.toUpperCase()}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select>
+                <select className="medusa-select medusa-select--small" onChange={setValue} value={value}>
+                  {isLoading && <CircularProgress/>}
+                  {regions && !regions.length && <Text>No regions</Text>}
+                  {regions && regions.length > 0 && [...new Set(regions.map(region => region.currency_code))].map((currencyCode) => (
+                    <option key={currencyCode} value={currencyCode}>
+                      {currencyCode.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
               </div>
             </Grid>
           </Grid>
       </Grid>
       {value ? <SalesDetails orderStatuses={orderStatuses} currencyCode={value} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/> : 
         <Grid item>
-          <Heading level="h2">Please select a currency</Heading>
+          <h2>Please select a currency</h2>
         </Grid>
       }
     </Grid>
