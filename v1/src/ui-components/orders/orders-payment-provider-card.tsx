@@ -17,6 +17,7 @@ import type { DateRange } from "../utils/types";
 import { Cash } from "@medusajs/icons";
 import { OrdersPaymentProviderResponse } from "./types";
 import { OrdersPaymentProviderPieChart } from "./orders-payment-provider-chart";
+import { CustomAlert } from "../common/custom-alert";
 
 type AdminOrdersPaymentProviderQuery = {
   dateRangeFrom?: number
@@ -48,17 +49,17 @@ const OrdersPaymentProviderDetails = ({dateRange, dateRangeCompareTo, compareEna
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders</Heading>
+    return <h3 level="h3">Cannot get orders</h3>
   }
 
   if (data.analytics.dateRangeFrom) {
     return <OrdersPaymentProviderPieChart ordersPaymentProviderResponse={data} compareEnabled={compareEnabled}/>
   } else {
-    return <Heading level="h3">No orders</Heading>
+    return <h3 level="h3">No orders</h3>
   }
 }
 
@@ -72,9 +73,9 @@ export const OrdersPaymentProviderCard = ({ dateRange, dateRangeCompareTo, compa
               <Cash/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 Payment provider popularity
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

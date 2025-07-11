@@ -18,6 +18,7 @@ import type { DateRange } from "../../utils/types";
 import { CustomersRetentionCustomerRateResponse } from "../types";
 import { RetentionCustomerRateNumber } from "./customers-retention-customer-rate-number";
 import { OrderStatus } from "../../utils/types";
+import { CustomAlert } from "../../common/custom-alert";
 
 type AdminCustomersStatisticsQuery = {
   orderStatuses: string[],
@@ -51,11 +52,11 @@ const RetentionCustomerRateDetails = ({orderStatuses, dateRange, dateRangeCompar
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders or customers</Heading>
+    return <h3 level="h3">Cannot get orders or customers</h3>
   }
 
   if (data.analytics.dateRangeFrom) {
@@ -67,7 +68,7 @@ const RetentionCustomerRateDetails = ({orderStatuses, dateRange, dateRangeCompar
       </Grid>
     )
   } else {
-    return <Heading level="h3">No orders or customers</Heading>
+    return <h3 level="h3">No orders or customers</h3>
   }
 }
 
@@ -81,9 +82,9 @@ export const CustomersRetentionCustomerRate = ({orderStatuses, dateRange, dateRa
               <ShoppingBag/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 Retention customer rate
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

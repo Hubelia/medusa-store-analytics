@@ -41,7 +41,7 @@ const OutOfTheStockVariants = () => {
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get variants</Heading>
+    return <h3 level="h3">Cannot get variants</h3>
   }
 
   return <OutOfTheStockVariantsTable tableRows={transformToVariantTopTable(data.analytics)}/>
@@ -56,9 +56,9 @@ export const OutOfTheStockVariantsCard = () => {
               <ArrowRightOnRectangle/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 Out of the stock variants
-              </Heading>
+              </h2>
             </Grid>
             <Grid item>
               <Tooltip content='It includes only published products and not gift cards'>
@@ -70,9 +70,9 @@ export const OutOfTheStockVariantsCard = () => {
       <Grid item xs={12} md={12}>
         <Grid container direction="row" spacing={2} alignItems="center">
           <Grid item>
-            <Heading level="h3">
+            <h3 level="h3">
               Last 5 variants
-            </Heading>
+            </h3>
           </Grid>
           <Grid item>
             <OutOfTheStockVariantsModal/>

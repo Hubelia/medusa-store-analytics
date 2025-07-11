@@ -17,6 +17,7 @@ import type { DateRange } from "../utils/types";
 import { useAdminCustomQuery } from "medusa-react"
 import { OrderStatus } from "../utils/types";
 import { DiscountsTopTable, DiscountsTopTableRow } from "./discounts-top-table";
+import { CustomAlert } from "../common/custom-alert";
 
 type AdminMarketingStatisticsQuery = {
   orderStatuses: string[],
@@ -83,17 +84,17 @@ const DiscountsTopByCount = ({orderStatuses, dateRange, dateRangeCompareTo} : {
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders or discounts</Heading>
+    return <h3 level="h3">Cannot get orders or discounts</h3>
   }
 
   if (data.analytics.dateRangeFrom) {
     return <DiscountsTopTable tableRows={transformToDiscountsTopTable(data.analytics)}/>
   } else {
-    return <Heading level="h3">No discounts for selected orders</Heading>
+    return <h3 level="h3">No discounts for selected orders</h3>
   }
 }
 
@@ -107,9 +108,9 @@ export const DiscountsTopCard = ({orderStatuses, dateRange, dateRangeCompareTo} 
               <ShoppingBag/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 Top discounts
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

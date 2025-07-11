@@ -14,6 +14,7 @@ import { CustomerService, Order, OrderService, OrderStatus, TransactionBaseServi
 import { Customer } from "@medusajs/medusa"
 import { calculateResolution } from "./utils/dateTransformations"
 import { In } from "typeorm"
+import CustomerRepository from "@medusajs/medusa/dist/repositories/customer"
 
 type CustomersHistory = {
   customerCount: string,
@@ -66,17 +67,21 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
 
   private readonly customerService: CustomerService;
   private readonly orderService: OrderService;
+  protected customerRepository_: typeof CustomerRepository;
+  private readonly orderRepository_;
 
   constructor(container) {
     super(container)
     this.customerService = container.customerService;
     this.orderService = container.orderService;
+    this.customerRepository_ = container.customerRepository;
+    this.orderRepository_ = container.orderRepository;
   }
 
   async getHistory(from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<CustomersHistoryResult> {
     if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
-        const customers = await this.activeManager_.getRepository(Customer)
+        const customers = await this.activeManager_.withRepository(this.customerRepository_)
         .createQueryBuilder('customer')
         .select(`
           CASE
@@ -121,7 +126,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastCustomer = await this.activeManager_.getRepository(Customer).find({
+        const lastCustomer = await this.activeManager_.withRepository(this.customerRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"},
@@ -137,7 +142,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
 
     if (startQueryFrom) {
       const resolution = calculateResolution(startQueryFrom);
-      const customers = await this.activeManager_.getRepository(Customer)
+      const customers = await this.activeManager_.withRepository(this.customerRepository_)
       .createQueryBuilder('customer')
       .select(`date_trunc('${resolution}', customer.created_at)`, 'date')
       .addSelect('COUNT(customer.id)', 'customerCount')
@@ -173,7 +178,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastCustomer = await this.activeManager_.getRepository(Customer).find({
+        const lastCustomer = await this.activeManager_.withRepository(this.customerRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"}
@@ -250,7 +255,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -392,7 +397,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
   async getCumulativeHistory(from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<CustomersHistoryResult> {
     if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
-        const afterCustomers = await this.activeManager_.getRepository(Customer)
+        const afterCustomers = await this.activeManager_.withRepository(this.customerRepository_)
         .createQueryBuilder('customer')
         .select(`date_trunc('${resolution}', customer.created_at) AS date`)
         .addSelect(
@@ -405,7 +410,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
         .getRawMany();
 
 
-        const beforeCustomers = await this.activeManager_.getRepository(Customer)
+        const beforeCustomers = await this.activeManager_.withRepository(this.customerRepository_)
           .createQueryBuilder('customer')
           .select(`COUNT(*) AS cumulative_count`)
           .where(`customer.created_at < :dateRangeFromCompareTo`, { dateRangeFromCompareTo })
@@ -453,7 +458,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastCustomer = await this.activeManager_.getRepository(Customer).find({
+        const lastCustomer = await this.activeManager_.withRepository(this.customerRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"},
@@ -469,7 +474,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
 
     if (startQueryFrom) {
       const resolution = calculateResolution(startQueryFrom);
-      const allCustomers = await this.activeManager_.getRepository(Customer)
+      const allCustomers = await this.activeManager_.withRepository(this.customerRepository_)
         .createQueryBuilder('customer')
         .select(`date_trunc('${resolution}', customer.created_at) AS date`)
         .addSelect(
@@ -522,7 +527,7 @@ export default class CustomersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},

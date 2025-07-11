@@ -43,7 +43,7 @@ const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
           <OrdersOverviewCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
         </Container>
       </Grid>
-      {/* <Grid item xs={6} md={6} xl={6}>
+      <Grid item xs={6} md={6} xl={6}>
         <Container>
           <SalesOverviewCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
         </Container>
@@ -84,7 +84,7 @@ const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
             <InfoBox/>
           </Grid>
         </Grid>
-      </Grid> */}
+      </Grid>
     </Grid>
   )
 }

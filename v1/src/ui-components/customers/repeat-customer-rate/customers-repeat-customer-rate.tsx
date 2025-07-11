@@ -19,6 +19,7 @@ import { CustomersRepeatCustomerRateResponse } from "../types";
 import { RepeatCustomerRateNummber } from "./customers-repeat-customer-rate-number";
 import { OrderStatus } from "../../utils/types";
 import { OrderFrequencyDistribution } from "./order-frequency-distribution";
+import { CustomAlert } from "../../common/custom-alert";
 
 type AdminCustomersStatisticsQuery = {
   orderStatuses: string[],
@@ -52,11 +53,11 @@ const RepeatCustomerRateDetails = ({orderStatuses, dateRange, dateRangeCompareTo
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders or customers</Heading>
+    return <h3 level="h3">Cannot get orders or customers</h3>
   }
 
   if (data.analytics.dateRangeFrom) {

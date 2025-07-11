@@ -19,6 +19,7 @@ import { Link } from "react-router-dom"
 import { Table } from "@medusajs/ui"
 import { useMemo } from "react"
 import { AdminOutOfTheStockVariantsStatisticsQuery, OutOfTheStockVariantsCountResponse, OutOfTheStockVariantsTableRow, transformToVariantTopTable } from "./helpers";
+import { CustomAlert } from "../../common/custom-alert";
 
 function TablePaginated({variants} : {variants: OutOfTheStockVariantsTableRow[]}) {
   const [currentPage, setCurrentPage] = useState(0)
@@ -133,7 +134,7 @@ const OutOfTheStockVariantsModalContent = () => {
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
     return (
       <FocusModal.Body>
-        <Alert variant="error">{errorText}</Alert>
+        <CustomAlert variant="error" children={errorText}/>
       </FocusModal.Body>
     );
   }
@@ -142,7 +143,7 @@ const OutOfTheStockVariantsModalContent = () => {
     <FocusModal.Body>
       <Grid container direction={'column'} alignContent={'center'} paddingTop={8}>
         <Grid item>
-          <Heading>All out of the stock variants</Heading>
+          <h1 level="h1">All out of the stock variants</h1>
         </Grid>
         <Grid item>
           <Text>

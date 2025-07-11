@@ -12,9 +12,14 @@
 
 import { OrderStatus, TransactionBaseService } from "@medusajs/medusa"
 import { Order, OrderService } from "@medusajs/medusa"
-import { calculateResolution } from "./utils/dateTransformations"
+import { calculateResolution, DateResolutionType } from "./utils/dateTransformations"
 import { OrdersHistoryResult } from "./utils/types"
 import { In } from "typeorm"
+
+type OrdersHistory = {
+  orderCount: string,
+  date: string
+}
 
 export type OrdersCounts = {
   dateRangeFrom?: number
@@ -49,59 +54,73 @@ type OrdersPaymentProviderPopularityResult = {
 export default class OrdersAnalyticsService extends TransactionBaseService {
 
   private readonly orderService: OrderService;
+  private readonly orderRepository_;
 
   constructor(
     container,
   ) {
     super(container)
     this.orderService = container.orderService;
+    this.orderRepository_ = container.orderRepository;
+    console.log('[OrdersAnalytics] Service initialized');
+    console.log('[OrdersAnalytics] Order entity:', Order);
+    console.log('[OrdersAnalytics] activeManager_:', this.activeManager_);
   }
 
   async getOrdersHistory(orderStatuses: OrderStatus[], from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersHistoryResult> {
+    console.log('[OrdersAnalytics] getOrdersHistory called with:', { orderStatuses, from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
+    
     const orderStatusesAsStrings = Object.values(orderStatuses);
     if (orderStatusesAsStrings.length) {
       if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
-        const query = this.activeManager_.getRepository(Order)
-        .createQueryBuilder('order')
-        .select(`
-          CASE
-            WHEN order.created_at < :from AND order.created_at >= :dateRangeFromCompareTo THEN 'previous'
-            ELSE 'current'
-          END AS type,
-          date_trunc('${resolution}', order.created_at) AS date
-        `)
-        .setParameters({ from, dateRangeFromCompareTo })
-        .addSelect('COUNT(order.id)', 'orderCount')
-        .where(`created_at >= :dateRangeFromCompareTo`, { dateRangeFromCompareTo })
-        .andWhere(`status IN(:...orderStatusesAsStrings)`, { orderStatusesAsStrings });
-  
-        const orders = await query
-        .groupBy('type, date')
-        .orderBy('date, type',  'ASC')
-        .getRawMany();
-  
-        const finalOrders: OrdersHistoryResult = orders.reduce((acc, entry) => {
-          const type = entry.type;
-          const date = entry.date;
-          const orderCount = entry.orderCount;
-          if (!acc[type]) {
-            acc[type] = [];
+        console.log('[OrdersAnalytics] Creating query builder for history with comparison');
+        
+        try {
+          const query = this.activeManager_.withRepository(this.orderRepository_)
+          .createQueryBuilder('order')
+          .select(`
+            CASE
+              WHEN order.created_at < :from AND order.created_at >= :dateRangeFromCompareTo THEN 'previous'
+              ELSE 'current'
+            END AS type,
+            date_trunc('${resolution}', order.created_at) AS date
+          `)
+          .setParameters({ from, dateRangeFromCompareTo })
+          .addSelect('COUNT(order.id)', 'orderCount')
+          .where(`created_at >= :dateRangeFromCompareTo`, { dateRangeFromCompareTo })
+          .andWhere(`status IN(:...orderStatusesAsStrings)`, { orderStatusesAsStrings });
+    
+          const orders = await query
+          .groupBy('type, date')
+          .orderBy('date, type',  'ASC')
+          .getRawMany();
+    
+          const finalOrders: OrdersHistoryResult = orders.reduce((acc, entry) => {
+            const type = entry.type;
+            const date = entry.date;
+            const orderCount = entry.orderCount;
+            if (!acc[type]) {
+              acc[type] = [];
+            }
+    
+            acc[type].push({date, orderCount})
+    
+            return acc;
+          }, {})
+    
+          return {
+            dateRangeFrom: from.getTime(),
+            dateRangeTo: to.getTime(),
+            dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
+            dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
+            current: finalOrders.current ? finalOrders.current : [],
+            previous: finalOrders.previous ? finalOrders.previous : [],
           }
-  
-          acc[type].push({date, orderCount})
-  
-          return acc;
-        }, {})
-  
-        return {
-          dateRangeFrom: from.getTime(),
-          dateRangeTo: to.getTime(),
-          dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
-          dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
-          current: finalOrders.current ? finalOrders.current : [],
-          previous: finalOrders.previous ? finalOrders.previous : [],
-        } 
+        } catch (error) {
+          console.error('[OrdersAnalytics] Error in getOrdersHistory query builder:', error);
+          throw error;
+        }
       }
 
       let startQueryFrom: Date | undefined;
@@ -110,15 +129,22 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
-            skip: 0,
-            take: 1,
-            order: { created_at: "ASC"},
-            where: { status: In(orderStatusesAsStrings) }
-          })
-  
-          if (lastOrder.length > 0) {
-            startQueryFrom = lastOrder[0].created_at;
+          console.log('[OrdersAnalytics] Getting earliest order for all time query');
+          try {
+            const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
+              skip: 0,
+              take: 1,
+              order: { created_at: "ASC"},
+              where: { status: In(orderStatusesAsStrings) }
+            })
+            console.log('[OrdersAnalytics] Earliest order found:', lastOrder);
+    
+            if (lastOrder.length > 0) {
+              startQueryFrom = lastOrder[0].created_at;
+            }
+          } catch (error) {
+            console.error('[OrdersAnalytics] Error getting earliest order in getOrdersHistory:', error);
+            throw error;
           }
         }
       } else {
@@ -127,26 +153,33 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   
       if (startQueryFrom) {
         const resolution = calculateResolution(startQueryFrom);
-        const query = this.activeManager_.getRepository(Order)
-          .createQueryBuilder('order')
-          .select(`date_trunc('${resolution}', order.created_at)`, 'date')
-          .addSelect('COUNT(order.id)', 'orderCount')
-          .where(`created_at >= :startQueryFrom`, { startQueryFrom })
-          .andWhere(`status IN(:...orderStatusesAsStrings)`, { orderStatusesAsStrings });
-  
-        const orders = await query
-        .groupBy('date')
-        .orderBy('date', 'ASC')
-        .getRawMany();
-  
-        return {
-          dateRangeFrom: startQueryFrom.getTime(),
-          dateRangeTo: to ? to.getTime(): new Date(Date.now()).getTime(),
-          dateRangeFromCompareTo: undefined,
-          dateRangeToCompareTo: undefined,
-          current: orders,
-          previous: []
-        };
+        console.log('[OrdersAnalytics] Creating query builder for history without comparison');
+        
+        try {
+          const query = this.activeManager_.withRepository(this.orderRepository_)
+            .createQueryBuilder('order')
+            .select(`date_trunc('${resolution}', order.created_at)`, 'date')
+            .addSelect('COUNT(order.id)', 'orderCount')
+            .where(`created_at >= :startQueryFrom`, { startQueryFrom })
+            .andWhere(`status IN(:...orderStatusesAsStrings)`, { orderStatusesAsStrings });
+    
+          const orders = await query
+          .groupBy('date')
+          .orderBy('date', 'ASC')
+          .getRawMany();
+    
+          return {
+            dateRangeFrom: startQueryFrom.getTime(),
+            dateRangeTo: to ? to.getTime(): new Date(Date.now()).getTime(),
+            dateRangeFromCompareTo: undefined,
+            dateRangeToCompareTo: undefined,
+            current: orders,
+            previous: []
+          };
+        } catch (error) {
+          console.error('[OrdersAnalytics] Error in getOrdersHistory query builder (no comparison):', error);
+          throw error;
+        }
       }
     }
     
@@ -161,6 +194,8 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   }
 
   async getOrdersCount(orderStatuses: OrderStatus[], from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersCounts> {
+    console.log('[OrdersAnalytics] getOrdersCount called with:', { orderStatuses, from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
+    
     let startQueryFrom: Date | undefined;
     const orderStatusesAsStrings = Object.values(orderStatuses);
 
@@ -170,54 +205,69 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
-            skip: 0,
-            take: 1,
-            order: { created_at: "ASC"},
-            where: { status: In(orderStatusesAsStrings) }
-          })
+          console.log('[OrdersAnalytics] Getting earliest order for count query');
+          try {
+            const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
+              skip: 0,
+              take: 1,
+              order: { created_at: "ASC"},
+              where: { status: In(orderStatusesAsStrings) }
+            })
+            console.log('[OrdersAnalytics] Earliest order found in count:', lastOrder);
 
-          if (lastOrder.length > 0) {
-            startQueryFrom = lastOrder[0].created_at;
+            if (lastOrder.length > 0) {
+              startQueryFrom = lastOrder[0].created_at;
+            }
+          } catch (error) {
+            console.error('[OrdersAnalytics] Error getting earliest order in getOrdersCount:', error);
+            throw error;
           }
         }
       } else {
           startQueryFrom = dateRangeFromCompareTo;
       }
-      const orders = await this.orderService.listAndCount({
-        created_at: startQueryFrom ? { gte: startQueryFrom } : undefined,
-        status: In(orderStatusesAsStrings)
-      }, {
-        select: [
-          "id",
-          "created_at",
-          "updated_at"
-        ],
-        order: { created_at: "DESC" },
-      })
-
-      if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
-        const previousOrders = orders[0].filter(order => order.created_at < from);
-        const currentOrders = orders[0].filter(order => order.created_at >= from);
-        return {
-          dateRangeFrom: from.getTime(),
-          dateRangeTo: to.getTime(),
-          dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
-          dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
-          current: currentOrders.length,
-          previous: previousOrders.length
-        }
-      }
       
-      if (startQueryFrom) {
-        return {
-          dateRangeFrom: startQueryFrom.getTime(),
-          dateRangeTo: to ? to.getTime() : new Date(Date.now()).getTime(),
-          dateRangeFromCompareTo: undefined,
-          dateRangeToCompareTo: undefined,
-          current: orders[1],
-          previous: 0
+      console.log('[OrdersAnalytics] Using orderService.listAndCount');
+      try {
+        const orders = await this.orderService.listAndCount({
+          created_at: startQueryFrom ? { gte: startQueryFrom } : undefined,
+          status: In(orderStatusesAsStrings)
+        }, {
+          select: [
+            "id",
+            "created_at",
+            "updated_at"
+          ],
+          order: { created_at: "DESC" },
+        })
+        console.log('[OrdersAnalytics] Orders found:', orders[1]);
+
+        if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
+          const previousOrders = orders[0].filter(order => order.created_at < from);
+          const currentOrders = orders[0].filter(order => order.created_at >= from);
+          return {
+            dateRangeFrom: from.getTime(),
+            dateRangeTo: to.getTime(),
+            dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
+            dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
+            current: currentOrders.length,
+            previous: previousOrders.length
+          }
         }
+        
+        if (startQueryFrom) {
+          return {
+            dateRangeFrom: startQueryFrom.getTime(),
+            dateRangeTo: to ? to.getTime() : new Date(Date.now()).getTime(),
+            dateRangeFromCompareTo: undefined,
+            dateRangeToCompareTo: undefined,
+            current: orders[1],
+            previous: 0
+          }
+        }
+      } catch (error) {
+        console.error('[OrdersAnalytics] Error in orderService.listAndCount:', error);
+        throw error;
       }
     }
     
@@ -232,6 +282,8 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   }
 
   async getPaymentProviderPopularity(from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersPaymentProviderPopularityResult> {
+    console.log('[OrdersAnalytics] getPaymentProviderPopularity called with:', { from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
+    
     function calculateSumAndPercentageOfResults(results: InitialOrdersPaymentProvider[]): OrdersPaymentProvider[] {
 
         const orderMap: Map<string, string> = new Map();
@@ -265,51 +317,57 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
     }
     if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
       const resolution = calculateResolution(from);
-      const query = this.activeManager_
-      .getRepository(Order)
-      .createQueryBuilder('order')
-      .select(`
-        CASE
-          WHEN order.created_at < :from AND order.created_at >= :dateRangeFromCompareTo THEN 'previous'
-          ELSE 'current'
-        END AS type`)
-      .addSelect(`date_trunc('${resolution}', order.created_at)`, 'date')
-      .addSelect('COUNT(order.id)', 'orderCount')
-      .leftJoinAndSelect('order.payments', 'payments')
-      .where('order.created_at >= :dateRangeFromCompareTo', { dateRangeFromCompareTo })
+      console.log('[OrdersAnalytics] Creating payment provider query with comparison');
       
-      const ordersCountWithPayments = await query
-      .groupBy('date, type, payments.id')
-      .orderBy('date', 'ASC')
-      .setParameters({from, dateRangeFromCompareTo})
-      .getRawMany()
+      try {
+        const query = this.activeManager_.withRepository(this.orderRepository_)
+        .createQueryBuilder('order')
+        .select(`
+          CASE
+            WHEN order.created_at < :from AND order.created_at >= :dateRangeFromCompareTo THEN 'previous'
+            ELSE 'current'
+          END AS type`)
+        .addSelect(`date_trunc('${resolution}', order.created_at)`, 'date')
+        .addSelect('COUNT(order.id)', 'orderCount')
+        .leftJoinAndSelect('order.payments', 'payments')
+        .where('order.created_at >= :dateRangeFromCompareTo', { dateRangeFromCompareTo })
+        
+        const ordersCountWithPayments = await query
+        .groupBy('date, type, payments.id')
+        .orderBy('date', 'ASC')
+        .setParameters({from, dateRangeFromCompareTo})
+        .getRawMany()
 
-      const finalOrders: OrdersPaymentProviderPopularityResult = ordersCountWithPayments.reduce((acc, entry) => {
-        const type = entry.type;
-        const orderCount = entry.orderCount;
-        const paymentProviderId = entry.payments_provider_id;
-        if (!acc[type]) {
-          acc[type] = [];
+        const finalOrders: OrdersPaymentProviderPopularityResult = ordersCountWithPayments.reduce((acc, entry) => {
+          const type = entry.type;
+          const orderCount = entry.orderCount;
+          const paymentProviderId = entry.payments_provider_id;
+          if (!acc[type]) {
+            acc[type] = [];
+          }
+
+          acc[type].push({
+            orderCount,
+            paymentProviderId,
+          })
+
+          return acc;
+        }, {})
+
+        const finalOrdersCurrentGrouped = calculateSumAndPercentageOfResults(finalOrders.current ? finalOrders.current : []);
+        const finalOrdersPreviousGrouped = calculateSumAndPercentageOfResults(finalOrders.previous ? finalOrders.previous : []);
+
+        return {
+          dateRangeFrom: from.getTime(),
+          dateRangeTo: to.getTime(),
+          dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
+          dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
+          current: finalOrdersCurrentGrouped ? finalOrdersCurrentGrouped : [],
+          previous: finalOrdersPreviousGrouped ? finalOrdersPreviousGrouped : [],
         }
-
-        acc[type].push({
-          orderCount,
-          paymentProviderId,
-        })
-
-        return acc;
-      }, {})
-
-      const finalOrdersCurrentGrouped = calculateSumAndPercentageOfResults(finalOrders.current ? finalOrders.current : []);
-      const finalOrdersPreviousGrouped = calculateSumAndPercentageOfResults(finalOrders.previous ? finalOrders.previous : []);
-
-      return {
-        dateRangeFrom: from.getTime(),
-        dateRangeTo: to.getTime(),
-        dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
-        dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
-        current: finalOrdersCurrentGrouped ? finalOrdersCurrentGrouped : [],
-        previous: finalOrdersPreviousGrouped ? finalOrdersPreviousGrouped : [],
+      } catch (error) {
+        console.error('[OrdersAnalytics] Error in payment provider query with comparison:', error);
+        throw error;
       }
     }
 
@@ -319,14 +377,21 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastOrder = await this.activeManager_.getRepository(Order).find({
-          skip: 0,
-          take: 1,
-          order: { created_at: "ASC"},
-        })
+        console.log('[OrdersAnalytics] Getting earliest order for payment provider popularity');
+        try {
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
+            skip: 0,
+            take: 1,
+            order: { created_at: "ASC"},
+          })
+          console.log('[OrdersAnalytics] Earliest order found in payment provider:', lastOrder);
 
-        if (lastOrder.length > 0) {
-          startQueryFrom = lastOrder[0].created_at;
+          if (lastOrder.length > 0) {
+            startQueryFrom = lastOrder[0].created_at;
+          }
+        } catch (error) {
+          console.error('[OrdersAnalytics] Error getting earliest order in getPaymentProviderPopularity:', error);
+          throw error;
         }
       }
     } else {
@@ -335,35 +400,41 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
     
     if (startQueryFrom) {
       const resolution = calculateResolution(startQueryFrom);
-      const query = this.activeManager_
-      .getRepository(Order)
-      .createQueryBuilder('order')
-      .select(`date_trunc('${resolution}', order.created_at)`, 'date')
-      .addSelect('COUNT(order.id)', 'orderCount')
-      .leftJoinAndSelect('order.payments', 'payments')
-      .where('order.created_at >= :startQueryFrom', { startQueryFrom })
+      console.log('[OrdersAnalytics] Creating payment provider query without comparison');
+      
+      try {
+        const query = this.activeManager_.withRepository(this.orderRepository_)
+        .createQueryBuilder('order')
+        .select(`date_trunc('${resolution}', order.created_at)`, 'date')
+        .addSelect('COUNT(order.id)', 'orderCount')
+        .leftJoinAndSelect('order.payments', 'payments')
+        .where('order.created_at >= :startQueryFrom', { startQueryFrom })
 
-      const ordersCountWithPayments = await query
-      .groupBy('date, payments.id')
-      .orderBy('date', 'ASC')
-      .getRawMany()
+        const ordersCountWithPayments = await query
+        .groupBy('date, payments.id')
+        .orderBy('date', 'ASC')
+        .getRawMany()
 
-      const initialOrders: InitialOrdersPaymentProvider[] = ordersCountWithPayments.map(order => {
+        const initialOrders: InitialOrdersPaymentProvider[] = ordersCountWithPayments.map(order => {
+          return {
+            orderCount: order.orderCount,
+            paymentProviderId: order.payments_provider_id,
+          }
+        });
+
+        const finalOrdersGrouped = calculateSumAndPercentageOfResults(initialOrders ? initialOrders : []);
+
         return {
-          orderCount: order.orderCount,
-          paymentProviderId: order.payments_provider_id,
+          dateRangeFrom: startQueryFrom.getTime(),
+          dateRangeTo: to ? to.getTime(): new Date(Date.now()).getTime(),
+          dateRangeFromCompareTo: undefined,
+          dateRangeToCompareTo: undefined,
+          current: finalOrdersGrouped,
+          previous: []
         }
-      });
-
-      const finalOrdersGrouped = calculateSumAndPercentageOfResults(initialOrders ? initialOrders : []);
-
-      return {
-        dateRangeFrom: startQueryFrom.getTime(),
-        dateRangeTo: to ? to.getTime(): new Date(Date.now()).getTime(),
-        dateRangeFromCompareTo: undefined,
-        dateRangeToCompareTo: undefined,
-        current: finalOrdersGrouped,
-        previous: []
+      } catch (error) {
+        console.error('[OrdersAnalytics] Error in payment provider query without comparison:', error);
+        throw error;
       }
     }
 

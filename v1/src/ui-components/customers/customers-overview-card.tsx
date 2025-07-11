@@ -27,9 +27,9 @@ export const CustomersOverviewCard = ({dateRange, dateRangeCompareTo, compareEna
               <Users/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 New customers
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

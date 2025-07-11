@@ -16,6 +16,7 @@ import { CircularProgress, Grid } from "@mui/material";
 import type { DateRange } from "../../utils/types";
 import { useAdminCustomQuery } from "medusa-react"
 import { ReturnedVariantsTable, VariantsTopTableRow } from "./returned-variants-table";
+import { CustomAlert } from "../../common/custom-alert";
 
 type AdminProductsStatisticsQuery = {
   dateRangeFrom: number
@@ -86,17 +87,17 @@ const ReturnedVariantsByCount = ({dateRange, dateRangeCompareTo} : {
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders or products</Heading>
+    return <h3 level="h3">Cannot get orders or products</h3>
   }
 
   if (data.analytics.dateRangeFrom) {
     return <ReturnedVariantsTable tableRows={transformToVariantTopTable(data.analytics)}/>
   } else {
-    return <Heading level="h3">No products for selected orders</Heading>
+    return <h3 level="h3">No products for selected orders</h3>
   }
 }
 
@@ -110,9 +111,9 @@ export const ReturnedVariantsByCountCard = ({dateRange, dateRangeCompareTo} :
               <ShoppingBag/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 level="h2">
                 Top returned variants
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

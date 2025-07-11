@@ -90,7 +90,7 @@ const AnalyticsPage = () => {
             <Box height={20}></Box>
             <OverviewTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
           </Tabs.Content>
-          {/* <Tabs.Content value='sales'>
+          <Tabs.Content value='sales'>
             <Box height={20}></Box>
             <SalesTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
           </Tabs.Content>
@@ -105,7 +105,7 @@ const AnalyticsPage = () => {
           <Tabs.Content value='products'>
             <Box height={20}></Box>
             <ProductsTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
-          </Tabs.Content> */}
+          </Tabs.Content>
         </Tabs>
       </Grid>
     </Grid>

@@ -50,13 +50,20 @@ type OutOfTheStockVariantsCountResult = {
 
 export default class ProductsAnalyticsService extends TransactionBaseService {
 
-  private readonly TOP_LIMIT;
+  private readonly TOP_LIMIT = 10;
+  private readonly orderRepository_;
+  private readonly lineItemRepository_;
+  private readonly productVariantRepository_;
+  private readonly returnItemRepository_;
 
   constructor(
     container,
   ) {
     super(container)
-    this.TOP_LIMIT = 5;
+    this.orderRepository_ = container.orderRepository;
+    this.lineItemRepository_ = container.lineItemRepository;
+    this.productVariantRepository_ = container.productVariantRepository;
+    this.returnItemRepository_ = container.returnItemRepository;
   }
 
   async getTopVariantsByCount(orderStatuses: OrderStatus[], from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<VariantsCountPopularityResult> {
@@ -64,7 +71,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
     if (orderStatusesAsStrings.length) {
       if (from && to) {
         const query = this.activeManager_
-        .getRepository(LineItem)
+        .withRepository(this.lineItemRepository_)
         .createQueryBuilder('lineitem')
         .select("lineItem.variant_id", "variantId")
         .addSelect("lineItem.title", "title")
@@ -107,7 +114,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -124,7 +131,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
 
       if (startQueryFrom) {
         const query = this.activeManager_
-        .getRepository(LineItem)
+        .withRepository(this.lineItemRepository_)
         .createQueryBuilder('lineitem')
         .select("lineItem.variant_id", "variantId")
         .addSelect("lineItem.title", "title")
@@ -174,7 +181,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
 
   async getTopReturnedVariantsByCount(from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<VariantsCountPopularityResult> {
     if (from && to) {
-      const query = this.activeManager_.getRepository(ReturnItem)
+      const query = this.activeManager_.withRepository(this.returnItemRepository_)
       .createQueryBuilder('returnItem')
       .leftJoinAndMapOne(
         'returnItem.lineItem',
@@ -234,7 +241,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastOrder = await this.activeManager_.getRepository(Order).find({
+        const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"},
@@ -249,7 +256,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
     }
 
     if (startQueryFrom) {
-      const query = this.activeManager_.getRepository(ReturnItem)
+      const query = this.activeManager_.withRepository(this.returnItemRepository_)
       .createQueryBuilder('returnItem')
       .leftJoinAndMapOne(
         'returnItem.lineItem',
@@ -318,7 +325,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
     if (orderStatusesAsStrings.length) {
       if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const productsSoldCurrently = await this.activeManager_
-        .getRepository(LineItem)
+        .withRepository(this.lineItemRepository_)
         .createQueryBuilder('lineitem')
         .select("SUM(lineItem.quantity)")
         .innerJoin('lineitem.order', 'order')
@@ -327,7 +334,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
         .getRawOne()
 
         const productsSoldPreviously = await this.activeManager_
-        .getRepository(LineItem)
+        .withRepository(this.lineItemRepository_)
         .createQueryBuilder('lineitem')
         .select("SUM(lineItem.quantity)")
         .innerJoin('lineitem.order', 'order')
@@ -352,7 +359,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -369,7 +376,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
   
       if (startQueryFrom) {
         const productsSoldCurrently = await this.activeManager_
-        .getRepository(LineItem)
+        .withRepository(this.lineItemRepository_)
         .createQueryBuilder('lineitem')
         .select("SUM(lineItem.quantity)")
         .innerJoin('lineitem.order', 'order')
@@ -401,7 +408,7 @@ export default class ProductsAnalyticsService extends TransactionBaseService {
   async getOutOfTheStockVariants(limit?: number) : Promise<OutOfTheStockVariantsCountResult> {
     const productStatusesAsStrings = ['published']
     const query = this.activeManager_
-      .getRepository(ProductVariant)
+      .withRepository(this.productVariantRepository_)
       .createQueryBuilder('productVariant')
       .select("productVariant.id", "variant_id")
       .addSelect("productVariant.updated_at", "updated_at")

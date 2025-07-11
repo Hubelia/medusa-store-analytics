@@ -11,10 +11,10 @@
  */
 
 import { useAdminCustomQuery } from "medusa-react"
-import { Heading, Alert } from "@medusajs/ui";
 import { CircularProgress } from "@mui/material";
 import type { DateRange } from "../utils/types";
 import { ChartCurrentPrevious } from "../common/chart-components";
+import { CustomAlert } from "../common/custom-alert";
 
 type AdminCustomersStatisticsQuery = {
   dateRangeFrom?: number
@@ -62,11 +62,11 @@ export const CustomersByNewChart = ({dateRange, dateRangeCompareTo, compareEnabl
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get customers</Heading>
+    return <h3 level="h3">Cannot get customers</h3>
   }
 
   if (data.analytics.dateRangeFrom && data.analytics.dateRangeTo) {
@@ -86,7 +86,7 @@ export const CustomersByNewChart = ({dateRange, dateRangeCompareTo, compareEnabl
     };
     return (
       <>
-        <Heading level="h3">New customers by time</Heading>
+        <h3 level="h3">New customers by time</h3>
         <ChartCurrentPrevious 
           rawChartData={rawChartData} 
           fromDate={new Date(data.analytics.dateRangeFrom)} 
@@ -98,6 +98,6 @@ export const CustomersByNewChart = ({dateRange, dateRangeCompareTo, compareEnabl
       </>
     )
   } else {
-    return <Heading level="h3">No customers</Heading>
+    return <h3 level="h3">No customers</h3>
   }
 }

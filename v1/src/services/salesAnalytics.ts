@@ -94,12 +94,16 @@ function groupPerDate(orders: Order[], resolution: DateResolutionType) {
 export default class SalesAnalyticsService extends TransactionBaseService {
 
   private readonly orderService: OrderService;
+  private readonly orderRepository_;
+  private readonly refundRepository_;
 
   constructor(
     container,
   ) {
     super(container)
     this.orderService = container.orderService;
+    this.orderRepository_ = container.orderRepository;
+    this.refundRepository_ = container.refundRepository;
   }
 
   async getOrdersSales(orderStatuses: OrderStatus[], currencyCode: string, from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<SalesHistoryResult> {
@@ -111,7 +115,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -197,7 +201,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
       if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .select(`
           CASE
@@ -252,7 +256,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -270,7 +274,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
       if (startQueryFrom) {
         const resolution = calculateResolution(startQueryFrom);
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .select(`date_trunc('${resolution}', order.created_at)`, 'date')
         .addSelect('COUNT(order.id)', 'orderCount')
@@ -319,7 +323,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
       if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .select(`
           CASE
@@ -374,7 +378,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          const lastOrder = await this.activeManager_.getRepository(Order).find({
+          const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
@@ -392,7 +396,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
       if (startQueryFrom) {
         const resolution = calculateResolution(startQueryFrom);
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .select(`date_trunc('${resolution}', order.created_at)`, 'date')
         .addSelect('COUNT(order.id)', 'orderCount')
@@ -437,7 +441,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
 
   async getRefunds(currencyCode: string, from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<RefundsResult> {
     if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
-        const query = this.activeManager_.getRepository(Refund)
+        const query = this.activeManager_.withRepository(this.refundRepository_)
         .createQueryBuilder('refund')
         .select(`
           CASE
@@ -477,7 +481,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastRefund = await this.activeManager_.getRepository(Refund).find({
+        const lastRefund = await this.activeManager_.withRepository(this.refundRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"},
@@ -492,7 +496,7 @@ export default class SalesAnalyticsService extends TransactionBaseService {
     }
 
     if (startQueryFrom) {
-      const query = this.activeManager_.getRepository(Refund)
+      const query = this.activeManager_.withRepository(this.refundRepository_)
         .createQueryBuilder('refund')
         .select("SUM(refund.amount)", "sum")
         .innerJoin('refund.order', 'order')

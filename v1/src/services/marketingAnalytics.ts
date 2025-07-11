@@ -31,13 +31,14 @@ type DiscountsCountPopularityResult = {
 
 export default class MarketingAnalyticsService extends TransactionBaseService {
 
-  private readonly TOP_LIMIT;
+  private readonly TOP_LIMIT = 10;
+  private readonly orderRepository_;
 
   constructor(
     container,
   ) {
     super(container)
-    this.TOP_LIMIT = 5;
+    this.orderRepository_ = container.orderRepository;
   }
 
   async getTopDiscountsByCount(orderStatuses: OrderStatus[], from?: Date, to?: Date) : Promise<DiscountsCountPopularityResult> {
@@ -45,7 +46,7 @@ export default class MarketingAnalyticsService extends TransactionBaseService {
     if (orderStatusesAsStrings.length) {
       if (from && to) {
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .innerJoin("order.discounts", "discount")
         .select("discount.code", "code")
@@ -82,7 +83,7 @@ export default class MarketingAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        const lastOrder = await this.activeManager_.getRepository(Order).find({
+        const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
           skip: 0,
           take: 1,
           order: { created_at: "ASC"},
@@ -96,7 +97,7 @@ export default class MarketingAnalyticsService extends TransactionBaseService {
 
       if (startQueryFrom) {
         const query = this.activeManager_
-        .getRepository(Order)
+        .withRepository(this.orderRepository_)
         .createQueryBuilder('order')
         .innerJoin("order.discounts", "discount")
         .select("discount.code", "code")

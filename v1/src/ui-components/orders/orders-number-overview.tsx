@@ -17,6 +17,7 @@ import type { DateRange } from "../utils/types";
 import { IconComparison } from "../common/icon-comparison";
 import { PercentageComparison } from "../common/percentage-comparison";
 import { OrderStatus } from "../utils/types";
+import { CustomAlert } from "../common/custom-alert";
 
 type AdminOrdersStatisticsQuery = {
   orderStatuses: string[],
@@ -61,19 +62,19 @@ export const OrdersNumber = ({orderStatuses, dateRange, dateRangeCompareTo, comp
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText}/>
   }
 
   if (data.analytics == undefined) {
-    return <Heading level="h3">Cannot get orders</Heading>
+    return <h3 level="h3">Cannot get orders</h3>
   }
 
   return (
     <Grid container alignItems={'center'} spacing={2}>
       <Grid item>
-        <Heading level="h1">
+        <h1 level="h1">
           {data.analytics.current}
-        </Heading>
+        </h1>
       </Grid>
       {compareEnabled && dateRangeCompareTo && 
       <Grid item>
