@@ -81,10 +81,10 @@ const AnalyticsPage = () => {
         <Tabs defaultValue='overview'>
           <Tabs.List style={ { justifyContent: 'center' } }>
             <Tabs.Trigger value='overview'>Overview</Tabs.Trigger>
-            {/* <Tabs.Trigger value='sales'>Sales</Tabs.Trigger> */}
-            {/* <Tabs.Trigger value='orders'>Orders</Tabs.Trigger> */}
-            {/* <Tabs.Trigger value='customers'>Customers</Tabs.Trigger> */}
-            {/* <Tabs.Trigger value='products'>Products</Tabs.Trigger> */}
+            <Tabs.Trigger value='sales'>Sales</Tabs.Trigger>
+            <Tabs.Trigger value='orders'>Orders</Tabs.Trigger>
+            <Tabs.Trigger value='customers'>Customers</Tabs.Trigger>
+            <Tabs.Trigger value='products'>Products</Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value='overview'>
             <Box height={20}></Box>
@@ -111,7 +111,6 @@ const AnalyticsPage = () => {
     </Grid>
   );
 }
-console.log('allo')
 
 export const config: RouteConfig = {
   link: {
