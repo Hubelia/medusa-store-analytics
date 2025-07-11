@@ -26,9 +26,9 @@ export const SalesNumber = ({salesHistoryResponse, compareEnabled} : {salesHisto
   return (
     <Grid container alignItems={'center'} spacing={2}>
       <Grid item>
-        <Heading level="h1">
+        <h1 level="h1">
           {amountToDisplay(overallCurrentSum, salesHistoryResponse.analytics.currencyDecimalDigits)} {salesHistoryResponse.analytics.currencyCode.toUpperCase()}
-        </Heading>
+        </h1>
       </Grid>
       {compareEnabled && salesHistoryResponse.analytics.dateRangeFromCompareTo && 
       <Grid item>

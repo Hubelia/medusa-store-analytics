@@ -34,28 +34,14 @@ const SalesTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled}
 
     return (
       <Grid container spacing={2}>
+        {/* First Row - Total Sales */}
         <Grid item xs={6} md={6} xl={6}>
           <Container>
             <SalesOverviewCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
           </Container>
         </Grid>
-        <Grid item xs={6} md={6} xl={6}>
-          <Container>
-            <SalesChannelPopularityCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
-          </Container>
-        </Grid>
-        <Grid item xs={6} md={6} xl={6}>
-          <Container>
-            <RefundsOverviewCard dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
-          </Container>
-        </Grid>
-        <Grid item xs={6} md={6} xl={6}>
-          <Container>
-            <DiscountsTopCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo}/>
-          </Container>
-        </Grid>
-        
-        {/* Revenue Charts - First Row */}
+
+        {/* Second Row - Revenue Charts */}
         <Grid item xs={6} md={6} xl={6}>
           <Container>
             <SalesTotalRevenueChart 
@@ -78,8 +64,8 @@ const SalesTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled}
             />
           </Container>
         </Grid>
-        
-        {/* Revenue Charts - Second Row */}
+
+        {/* Third Row - Taxes Chart and Sales Channel Popularity */}
         <Grid item xs={6} md={6} xl={6}>
           <Container>
             <SalesTotalTaxesChart 
@@ -89,6 +75,23 @@ const SalesTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled}
               dateRangeCompareTo={dateRangeCompareTo} 
               compareEnabled={compareEnabled}
             />
+          </Container>
+        </Grid>
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <SalesChannelPopularityCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
+          </Container>
+        </Grid>
+        
+        {/* Fourth Row - Refunds and Discounts */}
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <RefundsOverviewCard dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
+          </Container>
+        </Grid>
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <DiscountsTopCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo}/>
           </Container>
         </Grid>
       </Grid> 

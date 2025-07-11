@@ -60,9 +60,9 @@ export const SalesTotalTaxesChart = ({orderStatuses, currencyCode, dateRange, da
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid container paddingBottom={2} spacing={3}>
       <Grid item xs={12}>
-        <h3>Total Taxes</h3>
+        <h2>Total Taxes</h2>
       </Grid>
       <Grid item xs={12}>
         <Grid container alignItems={'center'} spacing={2}>
@@ -91,6 +91,7 @@ export const SalesTotalTaxesChart = ({orderStatuses, currencyCode, dateRange, da
       </Grid>
       {data.analytics.dateRangeFrom && (
         <Grid item xs={12}>
+          <h3>Taxes by time</h3>
           <ChartCurrentPrevious          
             rawChartData={rawChartData} 
             fromDate={new Date(data.analytics.dateRangeFrom)} 
@@ -102,5 +103,5 @@ export const SalesTotalTaxesChart = ({orderStatuses, currencyCode, dateRange, da
         </Grid>
       )}
     </Grid>
-  );
+  )
 } 

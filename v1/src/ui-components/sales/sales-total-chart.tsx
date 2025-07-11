@@ -32,7 +32,7 @@ export const SalesByNewChart = ({salesHistoryResponse, compareEnabled} : {salesH
   };
   return (
     <>
-      <Heading level="h3">Sales by time</Heading>
+      <h3 level="h3">Sales by time</h3>
       <ChartCurrentPrevious          
          rawChartData={rawChartData} 
         fromDate={new Date(salesHistoryResponse.analytics.dateRangeFrom)} 
