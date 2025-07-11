@@ -40,11 +40,6 @@ const ProductsTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
             <ReturnedVariantsByCountCard dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo}/>
           </Container>
         </Grid>
-        <Grid item xs={6} md={6} xl={6}>
-          <Container>
-            <OutOfTheStockVariantsCard/>
-          </Container>
-        </Grid>
       </Grid> 
     )
 }

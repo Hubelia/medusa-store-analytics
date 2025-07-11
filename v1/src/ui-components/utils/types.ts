@@ -39,8 +39,10 @@ export enum DateLasts {
   All = "All time",
   LastMonth = "Last 30 days",
   LastWeek = "Last 7 days",
-  LastYear = "Last 365 days"
+  LastYear = "Last 365 days",
+  Custom = "Custom"
 }
+
 export type DateRange = {
   from: Date,
   to: Date

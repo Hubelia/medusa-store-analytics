@@ -27,14 +27,47 @@ import { DateLasts, DropdownOrderStatus, OrderStatus, convertDateLastsToCompared
 import { Grid } from "@mui/material";
 import { ComparedDate, GenerateReportButton, SelectDateLasts, SwitchComparison } from '../../../ui-components/common/overview-components';
 import { useEffect } from 'react';
+import type { DateRange } from '../../../ui-components/utils/types';
 
 const AnalyticsPage = () => {
   const [dateLast, setDateLasts] = useState<DateLasts>(DateLasts.LastWeek);
   const [compareEnabled, setCompare] = useState<boolean>(true)
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([OrderStatus.COMPLETED, OrderStatus.PENDING])
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined)
+  const [previousCompareState, setPreviousCompareState] = useState<boolean>(true)
 
-  const dateRange = useMemo(() => convertDateLastsToDateRange(dateLast), [dateLast])
-  const dateRangeComparedTo = useMemo(() => convertDateLastsToComparedDateRange(dateLast), [dateLast])
+  const dateRange = useMemo(() => {
+    if (dateLast === DateLasts.Custom && customDateRange) {
+      return customDateRange;
+    }
+    return convertDateLastsToDateRange(dateLast);
+  }, [dateLast, customDateRange])
+
+  const dateRangeComparedTo = useMemo(() => {
+    if (dateLast === DateLasts.Custom && customDateRange) {
+      // For custom date ranges, create a comparison period of the same length
+      const duration = customDateRange.to.getTime() - customDateRange.from.getTime();
+      return {
+        from: new Date(customDateRange.from.getTime() - duration),
+        to: new Date(customDateRange.from.getTime())
+      };
+    }
+    return convertDateLastsToComparedDateRange(dateLast);
+  }, [dateLast, customDateRange])
+
+  // Handle compare mode when switching to/from custom date range
+  useEffect(() => {
+    if (dateLast === DateLasts.Custom || dateLast === DateLasts.All) {
+      // Store current compare state before disabling
+      if (compareEnabled) {
+        setPreviousCompareState(compareEnabled);
+              }
+        setCompare(false);
+    } else {
+      // Restore previous compare state when switching away from custom/all
+      setCompare(previousCompareState);
+    }
+  }, [dateLast]);
 
   useEffect(() => {
   }, [dateRange])
@@ -53,8 +86,16 @@ const AnalyticsPage = () => {
       case DateLasts.All:
         setDateLasts(DateLasts.All);
         break;
+      case DateLasts.Custom:
+        setDateLasts(DateLasts.Custom);
+        break;
     }
   }
+
+  function handleCustomDateRangeChange(dateRange: DateRange) {
+    setCustomDateRange(dateRange);
+  }
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} md={12}>
@@ -63,14 +104,18 @@ const AnalyticsPage = () => {
             <DropdownOrderStatus onOrderStatusChange={setOrderStatuses} appliedStatuses={orderStatuses}/>
           </Grid>
           <Grid item>
-            <SelectDateLasts dateLast={dateLast} onSelectChange={setDateLastsString}/>
+            <SelectDateLasts 
+              dateLast={dateLast} 
+              onSelectChange={setDateLastsString}
+              onCustomDateRangeChange={handleCustomDateRangeChange}
+            />
           </Grid>
         </Grid>
       </Grid>
       <Grid item xs={12} md={12} xl={12}>
         <Grid container alignItems='center' columnSpacing={6}>
           <Grid item>
-            <SwitchComparison compareEnabled={compareEnabled} onCheckChange={setCompare} allTime={dateLast == DateLasts.All}/>
+            <SwitchComparison compareEnabled={compareEnabled} onCheckChange={setCompare} allTime={dateLast == DateLasts.All || dateLast == DateLasts.Custom}/>
           </Grid>
           <Grid item>
             <ComparedDate compare={compareEnabled} comparedToDateRange={dateRangeComparedTo}/>

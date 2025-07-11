@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { Text, Switch, Label, Button, IconButton, Checkbox, Badge } from "@medusajs/ui";
+import { Text, Switch, Label, Button, IconButton, Checkbox, Badge, DatePicker } from "@medusajs/ui";
 import { Adjustments } from "@medusajs/icons"
 import { DateLasts, OrderStatus } from "../utils/types";
 import type { DateRange } from "../utils/types";
@@ -199,36 +199,119 @@ export const DropdownOrderStatus = ({onOrderStatusChange, appliedStatuses} : {on
 }
 
 type StringCallback = (value: string) => void;
+type DateRangeCallback = (value: DateRange) => void;
 
-export const SelectDateLasts = ({dateLast, onSelectChange} : {dateLast: DateLasts, onSelectChange: StringCallback}) => {
+export const SelectDateLasts = ({dateLast, onSelectChange, onCustomDateRangeChange} : 
+  {dateLast: DateLasts, onSelectChange: StringCallback, onCustomDateRangeChange?: DateRangeCallback}) => {
   const [value, setValue] = useState<string | undefined>(DateLasts.LastWeek)
+  const [customFromDate, setCustomFromDate] = useState<Date | undefined>(undefined)
+  const [customToDate, setCustomToDate] = useState<Date | undefined>(undefined)
+  const [isDateRangeValid, setIsDateRangeValid] = useState<boolean>(true)
   
   const setDropdownValue = (value: string) => {
     setValue(value)
     onSelectChange(value)
+    if (value !== DateLasts.Custom) {
+      // Reset custom date states when switching away from custom
+      setCustomFromDate(undefined)
+      setCustomToDate(undefined)
+      setIsDateRangeValid(true)
+    }
+  }
+
+  const validateDateRange = (fromDate: Date | undefined, toDate: Date | undefined): boolean => {
+    if (!fromDate || !toDate) return true; // Allow incomplete selections
+    return fromDate <= toDate;
+  }
+
+  const handleCustomDateChange = () => {
+    if (customFromDate && customToDate && onCustomDateRangeChange) {
+      const customDateRange: DateRange = {
+        from: customFromDate,
+        to: customToDate
+      }
+      onCustomDateRangeChange(customDateRange)
+    }
+  }
+
+  const handleFromDateChange = (date: Date) => {
+    setCustomFromDate(date)
+    const isValid = validateDateRange(date, customToDate)
+    setIsDateRangeValid(isValid)
+    
+    if (date && customToDate && onCustomDateRangeChange && isValid) {
+      const customDateRange: DateRange = {
+        from: date,
+        to: customToDate
+      }
+      onCustomDateRangeChange(customDateRange)
+    }
+  }
+
+  const handleToDateChange = (date: Date) => {
+    setCustomToDate(date)
+    const isValid = validateDateRange(customFromDate, date)
+    setIsDateRangeValid(isValid)
+    
+    if (customFromDate && date && onCustomDateRangeChange && isValid) {
+      const customDateRange: DateRange = {
+        from: customFromDate,
+        to: date
+      }
+      onCustomDateRangeChange(customDateRange)
+    }
   }
 
   const dateLastsToSelect: DateLasts[] = [
     DateLasts.LastWeek,
     DateLasts.LastMonth,
     DateLasts.LastYear,
-    DateLasts.All
+    DateLasts.All,
+    DateLasts.Custom
   ]
 
   return (
-    <div className="w-[170px]">
-      {/* @ts-ignore */}
-      <Select onValueChange={setDropdownValue} value={value}>
-        <Select.Trigger>
-          <Select.Value placeholder="Select a date" />
-        </Select.Trigger>
-        <Select.Content>
-          <Select.Item value={DateLasts.LastWeek}>Last Week</Select.Item>
-          <Select.Item value={DateLasts.LastMonth}>Last Month</Select.Item>
-          <Select.Item value={DateLasts.LastYear}>Last Year</Select.Item>
-          <Select.Item value={DateLasts.All}>All</Select.Item>
-        </Select.Content>
-      </Select>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <div className="w-[170px]">
+          {/* @ts-ignore */}
+          <Select onValueChange={setDropdownValue} value={value}>
+            <Select.Trigger>
+              <Select.Value placeholder="Select a date" />
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value={DateLasts.LastWeek}>Last Week</Select.Item>
+              <Select.Item value={DateLasts.LastMonth}>Last Month</Select.Item>
+              <Select.Item value={DateLasts.LastYear}>Last Year</Select.Item>
+              <Select.Item value={DateLasts.All}>All</Select.Item>
+              <Select.Item value={DateLasts.Custom}>Custom</Select.Item>
+            </Select.Content>
+          </Select>
+        </div>
+        
+        {/* Custom Date Range Pickers */}
+        {value === DateLasts.Custom && (
+          <>
+            <DatePicker
+              value={customFromDate}
+              onChange={handleFromDateChange}
+              placeholder="From date"
+            />
+            <DatePicker
+              value={customToDate}
+              onChange={handleToDateChange}
+              placeholder="To date"
+            />
+          </>
+        )}
+      </div>
+      
+      {/* Error message for invalid date range */}
+      {value === DateLasts.Custom && !isDateRangeValid && customFromDate && customToDate && (
+        <Text className="text-red-500 text-sm">
+          From date must be before or equal to the to date
+        </Text>
+      )}
     </div>
   )
 }
