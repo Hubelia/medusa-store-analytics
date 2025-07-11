@@ -82,6 +82,32 @@ export const GET = async (
           );
         }
         break;
+      case 'totals':
+        const totalsCurrencyCode = req.query.currencyCode;
+        if (totalsCurrencyCode as string) {
+          result = await salesAnalyticsService.getTotals(
+            orderStatuses,
+            totalsCurrencyCode as string, 
+            dateRangeFrom ? new Date(Number(dateRangeFrom)) : undefined, 
+            dateRangeTo ? new Date(Number(dateRangeTo)) : undefined, 
+            dateRangeFromCompareTo ? new Date(Number(dateRangeFromCompareTo)) : undefined, 
+            dateRangeToCompareTo ? new Date(Number(dateRangeToCompareTo)) : undefined, 
+          );
+        }
+        break;
+      case 'totals-history':
+        const totalsHistoryCurrencyCode = req.query.currencyCode;
+        if (totalsHistoryCurrencyCode as string) {
+          result = await salesAnalyticsService.getTotalsHistory(
+            orderStatuses,
+            totalsHistoryCurrencyCode as string, 
+            dateRangeFrom ? new Date(Number(dateRangeFrom)) : undefined, 
+            dateRangeTo ? new Date(Number(dateRangeTo)) : undefined, 
+            dateRangeFromCompareTo ? new Date(Number(dateRangeFromCompareTo)) : undefined, 
+            dateRangeToCompareTo ? new Date(Number(dateRangeToCompareTo)) : undefined, 
+          );
+        }
+        break;
     }
     res.status(200).json({
       analytics: result

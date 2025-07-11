@@ -75,6 +75,43 @@ type RefundsResult = {
   previous: string
 }
 
+export type SalesTotalsResult = {
+  currencyCode: string
+  currencyDecimalDigits: number
+  dateRangeFrom?: number
+  dateRangeTo?: number
+  dateRangeFromCompareTo?: number
+  dateRangeToCompareTo?: number
+  current: {
+    revenuePreShipping: string
+    shipping: string
+    taxes: string
+  }
+  previous: {
+    revenuePreShipping: string
+    shipping: string
+    taxes: string
+  }
+}
+
+type TotalsHistory = {
+  date: Date,
+  revenuePreShipping: string
+  shipping: string
+  taxes: string
+}
+
+export type TotalsHistoryResult = {
+  currencyCode: string,
+  currencyDecimalDigits: number,
+  dateRangeFrom?: number
+  dateRangeTo?: number,
+  dateRangeFromCompareTo?: number,
+  dateRangeToCompareTo?: number,
+  current: TotalsHistory[]
+  previous: TotalsHistory[]
+}
+
 function groupPerDate(orders: Order[], resolution: DateResolutionType) {
   const funcTruncateDate = getTruncateFunction(resolution);
   return orders.reduce((accumulator, order) => {
@@ -623,4 +660,302 @@ export default class SalesAnalyticsService extends TransactionBaseService {
   //     previous: undefined
   //   }
   // }
+
+  async getTotals(orderStatuses: OrderStatus[], currencyCode: string, from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date): Promise<SalesTotalsResult> {
+    const orderStatusesAsStrings = Object.values(orderStatuses);
+    
+    if (orderStatusesAsStrings.length) {
+      // Use the orderService.list method like getOrdersSales does
+      // since the totals are computed fields, not database columns
+      
+      let startQueryFrom: Date | undefined;
+      if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
+        startQueryFrom = dateRangeFromCompareTo;
+      } else if (from) {
+        startQueryFrom = from;
+      } else {
+        // All time
+        const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
+          skip: 0,
+          take: 1,
+          order: { created_at: "ASC"},
+          where: { status: In(orderStatusesAsStrings) }
+        });
+
+        if (lastOrder.length > 0) {
+          startQueryFrom = lastOrder[0].created_at;
+        }
+      }
+
+      if (startQueryFrom) {
+        const orders = await this.orderService.list({
+          created_at: startQueryFrom ? { gte: startQueryFrom } : undefined,
+          currency_code: currencyCode,
+          status: In(orderStatusesAsStrings)
+        }, {
+          select: [
+            "id",
+            "total",
+            "shipping_total", 
+            "tax_total",
+            "created_at"
+          ],
+          order: { created_at: "DESC" },
+        });
+
+        if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
+          // Split orders into current and previous periods
+          const currentOrders = orders.filter(order => order.created_at >= from);
+          const previousOrders = orders.filter(order => order.created_at < from);
+
+          // Calculate totals for current period
+          const currentTotals = currentOrders.reduce((acc, order) => {
+            const total = order.total || 0;
+            const shipping = order.shipping_total || 0;
+            const tax = order.tax_total || 0;
+            const revenuePreShipping = total - shipping;
+            
+            return {
+              revenuePreShipping: acc.revenuePreShipping + revenuePreShipping,
+              shipping: acc.shipping + shipping,
+              taxes: acc.taxes + tax
+            };
+          }, { revenuePreShipping: 0, shipping: 0, taxes: 0 });
+
+          // Calculate totals for previous period
+          const previousTotals = previousOrders.reduce((acc, order) => {
+            const total = order.total || 0;
+            const shipping = order.shipping_total || 0;
+            const tax = order.tax_total || 0;
+            const revenuePreShipping = total - shipping;
+            
+            return {
+              revenuePreShipping: acc.revenuePreShipping + revenuePreShipping,
+              shipping: acc.shipping + shipping,
+              taxes: acc.taxes + tax
+            };
+          }, { revenuePreShipping: 0, shipping: 0, taxes: 0 });
+
+          return {
+            currencyCode: currencyCode,
+            currencyDecimalDigits: getDecimalDigits(currencyCode),
+            dateRangeFrom: from.getTime(),
+            dateRangeTo: to.getTime(),
+            dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
+            dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
+            current: {
+              revenuePreShipping: currentTotals.revenuePreShipping.toString(),
+              shipping: currentTotals.shipping.toString(),
+              taxes: currentTotals.taxes.toString()
+            },
+            previous: {
+              revenuePreShipping: previousTotals.revenuePreShipping.toString(),
+              shipping: previousTotals.shipping.toString(),
+              taxes: previousTotals.taxes.toString()
+            }
+          };
+        } else {
+          // Single period - calculate totals for all orders
+          const totals = orders.reduce((acc, order) => {
+            const total = order.total || 0;
+            const shipping = order.shipping_total || 0;
+            const tax = order.tax_total || 0;
+            const revenuePreShipping = total - shipping;
+            
+            return {
+              revenuePreShipping: acc.revenuePreShipping + revenuePreShipping,
+              shipping: acc.shipping + shipping,
+              taxes: acc.taxes + tax
+            };
+          }, { revenuePreShipping: 0, shipping: 0, taxes: 0 });
+
+          return {
+            currencyCode: currencyCode,
+            currencyDecimalDigits: getDecimalDigits(currencyCode),
+            dateRangeFrom: startQueryFrom.getTime(),
+            dateRangeTo: to ? to.getTime() : new Date(Date.now()).getTime(),
+            dateRangeFromCompareTo: undefined,
+            dateRangeToCompareTo: undefined,
+            current: {
+              revenuePreShipping: totals.revenuePreShipping.toString(),
+              shipping: totals.shipping.toString(),
+              taxes: totals.taxes.toString()
+            },
+            previous: {
+              revenuePreShipping: '0',
+              shipping: '0',
+              taxes: '0'
+            }
+          };
+        }
+      }
+    }
+
+    // Default return when no orders found
+    return {
+      currencyCode: currencyCode,
+      currencyDecimalDigits: getDecimalDigits(currencyCode),
+      dateRangeFrom: undefined,
+      dateRangeTo: undefined,
+      dateRangeFromCompareTo: undefined,
+      dateRangeToCompareTo: undefined,
+      current: {
+        revenuePreShipping: '0',
+        shipping: '0',
+        taxes: '0'
+      },
+      previous: {
+        revenuePreShipping: '0',
+        shipping: '0',
+        taxes: '0'
+      }
+    };
+  }
+
+  async getTotalsHistory(orderStatuses: OrderStatus[], currencyCode: string, from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date): Promise<TotalsHistoryResult> {
+    const orderStatusesAsStrings = Object.values(orderStatuses);
+    
+    if (orderStatusesAsStrings.length) {
+      // Use the orderService.list method like getOrdersSales does
+      let startQueryFrom: Date | undefined;
+      if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
+        startQueryFrom = dateRangeFromCompareTo;
+      } else if (from) {
+        startQueryFrom = from;
+      } else {
+        // All time
+        const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
+          skip: 0,
+          take: 1,
+          order: { created_at: "ASC"},
+          where: { status: In(orderStatusesAsStrings) }
+        });
+
+        if (lastOrder.length > 0) {
+          startQueryFrom = lastOrder[0].created_at;
+        }
+      }
+
+      if (startQueryFrom) {
+        const orders = await this.orderService.list({
+          created_at: startQueryFrom ? { gte: startQueryFrom } : undefined,
+          currency_code: currencyCode,
+          status: In(orderStatusesAsStrings)
+        }, {
+          select: [
+            "id",
+            "total",
+            "shipping_total", 
+            "tax_total",
+            "created_at"
+          ],
+          order: { created_at: "DESC" },
+        });
+
+        if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
+          // Split orders into current and previous periods
+          const currentOrders = orders.filter(order => order.created_at >= from);
+          const previousOrders = orders.filter(order => order.created_at < from);
+          
+          // Group by date using the same resolution logic as sales
+          const resolution = calculateResolution(from);
+          const groupedCurrentOrders = this.groupOrdersByDateForTotals(currentOrders, resolution);
+          const groupedPreviousOrders = this.groupOrdersByDateForTotals(previousOrders, resolution);
+          
+          const currentTotals: TotalsHistory[] = Object.values(groupedCurrentOrders);
+          const previousTotals: TotalsHistory[] = Object.values(groupedPreviousOrders);
+
+          return {
+            currencyCode: currencyCode,
+            currencyDecimalDigits: getDecimalDigits(currencyCode),
+            dateRangeFrom: from.getTime(),
+            dateRangeTo: to.getTime(),
+            dateRangeFromCompareTo: dateRangeFromCompareTo.getTime(),
+            dateRangeToCompareTo: dateRangeToCompareTo.getTime(),
+            current: currentTotals.sort((a, b) => a.date.getTime() - b.date.getTime()),
+            previous: previousTotals.sort((a, b) => a.date.getTime() - b.date.getTime())
+          };
+        } else {
+          // Single period - group by date
+          const resolution = calculateResolution(startQueryFrom);
+          const groupedOrders = this.groupOrdersByDateForTotals(orders, resolution);
+          const currentTotals: TotalsHistory[] = Object.values(groupedOrders);
+
+          return {
+            currencyCode: currencyCode,
+            currencyDecimalDigits: getDecimalDigits(currencyCode),
+            dateRangeFrom: startQueryFrom.getTime(),
+            dateRangeTo: to ? to.getTime() : new Date(Date.now()).getTime(),
+            dateRangeFromCompareTo: undefined,
+            dateRangeToCompareTo: undefined,
+            current: currentTotals.sort((a, b) => a.date.getTime() - b.date.getTime()),
+            previous: []
+          };
+        }
+      }
+    }
+
+    // Default return when no orders found
+    return {
+      currencyCode: currencyCode,
+      currencyDecimalDigits: getDecimalDigits(currencyCode),
+      dateRangeFrom: undefined,
+      dateRangeTo: undefined,
+      dateRangeFromCompareTo: undefined,
+      dateRangeToCompareTo: undefined,
+      current: [],
+      previous: []
+    };
+  }
+
+  private groupOrdersByDateForTotals(orders: Order[], resolution: DateResolutionType): { [key: string]: TotalsHistory } {
+    const grouped: { [key: string]: TotalsHistory } = {};
+    
+    orders.forEach(order => {
+      const dateKey = this.getDateKey(order.created_at, resolution);
+      
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = {
+          date: this.getDateFromKey(dateKey, resolution),
+          revenuePreShipping: '0',
+          shipping: '0',
+          taxes: '0'
+        };
+      }
+      
+      const current = grouped[dateKey];
+      const total = order.total || 0;
+      const shipping = order.shipping_total || 0;
+      const tax = order.tax_total || 0;
+      const revenue = total - shipping;
+      
+      current.revenuePreShipping = (parseInt(current.revenuePreShipping) + revenue).toString();
+      current.shipping = (parseInt(current.shipping) + shipping).toString();
+      current.taxes = (parseInt(current.taxes) + tax).toString();
+    });
+    
+    return grouped;
+  }
+
+  private getDateKey(date: Date, resolution: DateResolutionType): string {
+    switch (resolution) {
+      case 'day':
+        return date.toISOString().split('T')[0]; // YYYY-MM-DD
+      case 'month':
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+      default:
+        return date.toISOString().split('T')[0];
+    }
+  }
+
+  private getDateFromKey(key: string, resolution: DateResolutionType): Date {
+    switch (resolution) {
+      case 'day':
+        return new Date(key + 'T00:00:00.000Z');
+      case 'month':
+        return new Date(key + '-01T00:00:00.000Z');
+      default:
+        return new Date(key + 'T00:00:00.000Z');
+    }
+  }
 }

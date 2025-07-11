@@ -20,9 +20,18 @@ import {
 } from '..';
 import type { DateRange } from '..';
 import { Grid } from "@mui/material";
+import { SalesTotalRevenueChart } from "../sales/sales-total-revenue-chart";
+import { SalesTotalShippingChart } from "../sales/sales-total-shipping-chart";
+import { SalesTotalTaxesChart } from "../sales/sales-total-taxes-chart";
+import { useState } from 'react';
+import { useAdminRegions } from "medusa-react"
 
 const SalesTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled} : 
   {orderStatuses: OrderStatus[], dateRange?: DateRange, dateRangeCompareTo?: DateRange, compareEnabled: boolean}) => {
+    
+    const { regions } = useAdminRegions();
+    const [ currencyCode ] = useState<string | undefined>(regions?.[0]?.currency_code || 'usd');
+
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} md={6} xl={6}>
@@ -43,6 +52,43 @@ const SalesTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled}
         <Grid item xs={6} md={6} xl={6}>
           <Container>
             <DiscountsTopCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo}/>
+          </Container>
+        </Grid>
+        
+        {/* Revenue Charts - First Row */}
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <SalesTotalRevenueChart 
+              orderStatuses={orderStatuses} 
+              currencyCode={currencyCode || 'usd'} 
+              dateRange={dateRange} 
+              dateRangeCompareTo={dateRangeCompareTo} 
+              compareEnabled={compareEnabled}
+            />
+          </Container>
+        </Grid>
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <SalesTotalShippingChart 
+              orderStatuses={orderStatuses} 
+              currencyCode={currencyCode || 'usd'} 
+              dateRange={dateRange} 
+              dateRangeCompareTo={dateRangeCompareTo} 
+              compareEnabled={compareEnabled}
+            />
+          </Container>
+        </Grid>
+        
+        {/* Revenue Charts - Second Row */}
+        <Grid item xs={6} md={6} xl={6}>
+          <Container>
+            <SalesTotalTaxesChart 
+              orderStatuses={orderStatuses} 
+              currencyCode={currencyCode || 'usd'} 
+              dateRange={dateRange} 
+              dateRangeCompareTo={dateRangeCompareTo} 
+              compareEnabled={compareEnabled}
+            />
           </Container>
         </Grid>
       </Grid> 
