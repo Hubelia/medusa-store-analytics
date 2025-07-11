@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Alert, Container } from "@medusajs/ui"
+import { Container } from "@medusajs/ui"
+import { CustomAlert } from "../common/custom-alert"
 import { Grid } from "@mui/material";
 import { 
   OrdersOverviewCard,
@@ -27,7 +28,7 @@ import type { DateRange } from '..';
 
 const InfoBox = () => {
   return (
-    <Alert variant="info">Click on other tabs to see more statistics.</Alert>
+                  <CustomAlert variant="info">Click on other tabs to see more statistics.</CustomAlert>
   )
 }
 

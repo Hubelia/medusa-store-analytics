@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Alert, Container } from "@medusajs/ui"
+import { Container } from "@medusajs/ui"
+import { CustomAlert } from "../common/custom-alert"
 import { Grid } from "@mui/material";
 import { 
   OrdersOverviewCard,
@@ -27,13 +28,14 @@ import type { DateRange } from '..';
 
 const InfoBox = () => {
   return (
-    <Alert variant="info">Click on other tabs to see more statistics.</Alert>
+    <CustomAlert variant="info" children="Click on other tabs to see more statistics." />
   )
 }
 
 const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled} : 
   {orderStatuses: OrderStatus[], dateRange?: DateRange, dateRangeCompareTo?: DateRange, compareEnabled: boolean}) => {
 
+    console.log('overview tab ?', orderStatuses)
   return (
     <Grid container spacing={2}>
       <Grid item xs={6} md={6} xl={6}>
@@ -41,7 +43,7 @@ const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
           <OrdersOverviewCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
         </Container>
       </Grid>
-      <Grid item xs={6} md={6} xl={6}>
+      {/* <Grid item xs={6} md={6} xl={6}>
         <Container>
           <SalesOverviewCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
         </Container>
@@ -82,7 +84,7 @@ const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
             <InfoBox/>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
     </Grid>
   )
 }

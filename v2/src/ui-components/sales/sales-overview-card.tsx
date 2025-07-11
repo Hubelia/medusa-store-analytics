@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Heading, Select, Text, Alert } from "@medusajs/ui";
+import { Heading, Select, Text } from "@medusajs/ui";
+import { CustomAlert } from "../common/custom-alert";
 import { CurrencyDollar } from "@medusajs/icons";
 import { CircularProgress, Grid } from "@mui/material";
 import type { DateRange, OrderStatus } from "../utils/types";
@@ -63,7 +64,7 @@ const SalesDetails = ({orderStatuses, currencyCode, dateRange, dateRangeCompareT
   if (error) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error">{errorText}</CustomAlert>
   }
 
   if (data && data.analytics == undefined) {

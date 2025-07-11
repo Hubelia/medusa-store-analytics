@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Heading, Alert } from "@medusajs/ui";
+import { Heading } from "@medusajs/ui";
+import { CustomAlert } from "../common/custom-alert";
 import { CircularProgress } from "@mui/material";
 import type { DateRange } from "../utils/types";
 import { ChartCurrentPrevious } from "../common/chart-components";
@@ -73,7 +74,7 @@ export const OrdersByNewChart = ({orderStatuses, dateRange, dateRangeCompareTo, 
   if (error) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error">{errorText}</CustomAlert>
   }
 
   if (data == undefined || data.analytics == undefined) {

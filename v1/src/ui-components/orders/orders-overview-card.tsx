@@ -28,9 +28,9 @@ export const OrdersOverviewCard = ({orderStatuses, dateRange, dateRangeCompareTo
               <ShoppingCart/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2 >
                 Orders
-              </Heading>
+              </h2>
             </Grid>
           </Grid>
       </Grid>

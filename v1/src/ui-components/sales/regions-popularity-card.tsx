@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Heading, Alert } from "@medusajs/ui";
+import { Heading } from "@medusajs/ui";
+import { CustomAlert } from "../common/custom-alert";
 import { ShoppingBag } from "@medusajs/icons";
 import { CircularProgress, Grid } from "@mui/material";
 import type { DateRange } from "../utils/types";
@@ -91,7 +92,7 @@ const RegionsPopularityDetails = ({orderStatuses, dateRange, dateRangeCompareTo,
   if (isError) {
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
-    return <Alert variant="error">{errorText}</Alert>
+    return <CustomAlert variant="error" children={errorText} />
   }
 
   if (data.analytics == undefined) {

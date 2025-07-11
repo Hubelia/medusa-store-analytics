@@ -15,6 +15,8 @@ import { useMemo } from "react"
 import { RouteConfig } from "@medusajs/admin"
 import { Tabs } from "@medusajs/ui"
 import { LightBulb } from "@medusajs/icons"
+import React from "react"
+
 import { Box } from "@mui/material";
 import OverviewTab from "../../../ui-components/tabs/overview";
 import OrdersTab from "../../../ui-components/tabs/orders";
@@ -79,17 +81,16 @@ const AnalyticsPage = () => {
         <Tabs defaultValue='overview'>
           <Tabs.List style={ { justifyContent: 'center' } }>
             <Tabs.Trigger value='overview'>Overview</Tabs.Trigger>
-            <Tabs.Trigger value='sales'>Sales</Tabs.Trigger>
-            <Tabs.Trigger value='orders'>Orders</Tabs.Trigger>
-            <Tabs.Trigger value='customers'>Customers</Tabs.Trigger>
-            <Tabs.Trigger value='products'>Products</Tabs.Trigger>
-            {process.env.MEDUSA_ADMIN_MEDUSA_STORE_ANALYTICS_HIDE_PRO === undefined && <Tabs.Trigger value='pro' style={ { color: 'purple' }}>Pro version</Tabs.Trigger>} 
+            {/* <Tabs.Trigger value='sales'>Sales</Tabs.Trigger> */}
+            {/* <Tabs.Trigger value='orders'>Orders</Tabs.Trigger> */}
+            {/* <Tabs.Trigger value='customers'>Customers</Tabs.Trigger> */}
+            {/* <Tabs.Trigger value='products'>Products</Tabs.Trigger> */}
           </Tabs.List>
           <Tabs.Content value='overview'>
             <Box height={20}></Box>
             <OverviewTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
           </Tabs.Content>
-          <Tabs.Content value='sales'>
+          {/* <Tabs.Content value='sales'>
             <Box height={20}></Box>
             <SalesTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
           </Tabs.Content>
@@ -104,16 +105,14 @@ const AnalyticsPage = () => {
           <Tabs.Content value='products'>
             <Box height={20}></Box>
             <ProductsTab orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
-          </Tabs.Content>
-          {process.env.MEDUSA_ADMIN_MEDUSA_STORE_ANALYTICS_HIDE_PRO === undefined && <Tabs.Content value='pro'>
-            <Box height={20}></Box>
-            <ProTab/>
-          </Tabs.Content>}
+          </Tabs.Content> */}
         </Tabs>
       </Grid>
     </Grid>
   );
 }
+console.log('allo')
+
 export const config: RouteConfig = {
   link: {
     label: "Analytics",
@@ -121,4 +120,5 @@ export const config: RouteConfig = {
   },
 }
 
+console.log('export default AnalyticsPage, which is clearly a function mate', AnalyticsPage)
 export default AnalyticsPage
