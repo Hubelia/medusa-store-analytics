@@ -35,7 +35,6 @@ const InfoBox = () => {
 const OverviewTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled} : 
   {orderStatuses: OrderStatus[], dateRange?: DateRange, dateRangeCompareTo?: DateRange, compareEnabled: boolean}) => {
 
-    console.log('overview tab ?', orderStatuses)
   return (
     <Grid container spacing={2}>
       <Grid item xs={6} md={6} xl={6}>

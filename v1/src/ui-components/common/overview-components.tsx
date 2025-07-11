@@ -174,7 +174,7 @@ export const DropdownOrderStatus = ({onOrderStatusChange, appliedStatuses} : {on
         <Adjustments />
       </IconButton>
     </DropdownMenu.Trigger>
-    <DropdownMenu.Content>
+    <DropdownMenu.Content className="p-2">
       <DropdownMenu.Label className="gap-x-2" style={ { paddingLeft: 8, paddingBottom: 8}}>
         <h3>Choose orders</h3>
       </DropdownMenu.Label>
@@ -188,7 +188,7 @@ export const DropdownOrderStatus = ({onOrderStatusChange, appliedStatuses} : {on
           <Label htmlFor={`order-status-${orderStatus}`}>{orderStatus}</Label>
         </DropdownMenu.Item>
       ))}
-      <DropdownMenu.Label className="gap-x-2">
+      <DropdownMenu.Label className="gap-x-2 flex justify-end">
           <Button onClick={handleApplyClick}>
             Apply
           </Button>

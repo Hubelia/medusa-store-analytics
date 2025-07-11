@@ -62,19 +62,14 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
     super(container)
     this.orderService = container.orderService;
     this.orderRepository_ = container.orderRepository;
-    console.log('[OrdersAnalytics] Service initialized');
-    console.log('[OrdersAnalytics] Order entity:', Order);
-    console.log('[OrdersAnalytics] activeManager_:', this.activeManager_);
   }
 
   async getOrdersHistory(orderStatuses: OrderStatus[], from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersHistoryResult> {
-    console.log('[OrdersAnalytics] getOrdersHistory called with:', { orderStatuses, from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
     
     const orderStatusesAsStrings = Object.values(orderStatuses);
     if (orderStatusesAsStrings.length) {
       if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
         const resolution = calculateResolution(from);
-        console.log('[OrdersAnalytics] Creating query builder for history with comparison');
         
         try {
           const query = this.activeManager_.withRepository(this.orderRepository_)
@@ -129,15 +124,13 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          console.log('[OrdersAnalytics] Getting earliest order for all time query');
           try {
             const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
               skip: 0,
-              take: 1,
+              take: 1,  
               order: { created_at: "ASC"},
               where: { status: In(orderStatusesAsStrings) }
             })
-            console.log('[OrdersAnalytics] Earliest order found:', lastOrder);
     
             if (lastOrder.length > 0) {
               startQueryFrom = lastOrder[0].created_at;
@@ -153,7 +146,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   
       if (startQueryFrom) {
         const resolution = calculateResolution(startQueryFrom);
-        console.log('[OrdersAnalytics] Creating query builder for history without comparison');
         
         try {
           const query = this.activeManager_.withRepository(this.orderRepository_)
@@ -194,7 +186,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   }
 
   async getOrdersCount(orderStatuses: OrderStatus[], from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersCounts> {
-    console.log('[OrdersAnalytics] getOrdersCount called with:', { orderStatuses, from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
     
     let startQueryFrom: Date | undefined;
     const orderStatusesAsStrings = Object.values(orderStatuses);
@@ -205,7 +196,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           startQueryFrom = from;
         } else {
           // All time
-          console.log('[OrdersAnalytics] Getting earliest order for count query');
           try {
             const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
               skip: 0,
@@ -213,7 +203,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
               order: { created_at: "ASC"},
               where: { status: In(orderStatusesAsStrings) }
             })
-            console.log('[OrdersAnalytics] Earliest order found in count:', lastOrder);
 
             if (lastOrder.length > 0) {
               startQueryFrom = lastOrder[0].created_at;
@@ -227,7 +216,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           startQueryFrom = dateRangeFromCompareTo;
       }
       
-      console.log('[OrdersAnalytics] Using orderService.listAndCount');
       try {
         const orders = await this.orderService.listAndCount({
           created_at: startQueryFrom ? { gte: startQueryFrom } : undefined,
@@ -240,7 +228,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
           ],
           order: { created_at: "DESC" },
         })
-        console.log('[OrdersAnalytics] Orders found:', orders[1]);
 
         if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
           const previousOrders = orders[0].filter(order => order.created_at < from);
@@ -282,7 +269,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
   }
 
   async getPaymentProviderPopularity(from?: Date, to?: Date, dateRangeFromCompareTo?: Date, dateRangeToCompareTo?: Date) : Promise<OrdersPaymentProviderPopularityResult> {
-    console.log('[OrdersAnalytics] getPaymentProviderPopularity called with:', { from, to, dateRangeFromCompareTo, dateRangeToCompareTo });
     
     function calculateSumAndPercentageOfResults(results: InitialOrdersPaymentProvider[]): OrdersPaymentProvider[] {
 
@@ -317,7 +303,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
     }
     if (dateRangeFromCompareTo && from && to && dateRangeToCompareTo) {
       const resolution = calculateResolution(from);
-      console.log('[OrdersAnalytics] Creating payment provider query with comparison');
       
       try {
         const query = this.activeManager_.withRepository(this.orderRepository_)
@@ -377,14 +362,12 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
         startQueryFrom = from;
       } else {
         // All time
-        console.log('[OrdersAnalytics] Getting earliest order for payment provider popularity');
         try {
           const lastOrder = await this.activeManager_.withRepository(this.orderRepository_).find({
             skip: 0,
             take: 1,
             order: { created_at: "ASC"},
           })
-          console.log('[OrdersAnalytics] Earliest order found in payment provider:', lastOrder);
 
           if (lastOrder.length > 0) {
             startQueryFrom = lastOrder[0].created_at;
@@ -400,7 +383,6 @@ export default class OrdersAnalyticsService extends TransactionBaseService {
     
     if (startQueryFrom) {
       const resolution = calculateResolution(startQueryFrom);
-      console.log('[OrdersAnalytics] Creating payment provider query without comparison');
       
       try {
         const query = this.activeManager_.withRepository(this.orderRepository_)

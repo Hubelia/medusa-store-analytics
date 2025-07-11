@@ -37,11 +37,9 @@ const AnalyticsPage = () => {
   const dateRangeComparedTo = useMemo(() => convertDateLastsToComparedDateRange(dateLast), [dateLast])
 
   useEffect(() => {
-    console.log('dateRange', dateRange)
   }, [dateRange])
 
   function setDateLastsString(select: string) {
-    console.log('select', select)
     switch (select) {
       case DateLasts.LastWeek:
         setDateLasts(DateLasts.LastWeek);
@@ -66,9 +64,6 @@ const AnalyticsPage = () => {
           </Grid>
           <Grid item>
             <SelectDateLasts dateLast={dateLast} onSelectChange={setDateLastsString}/>
-          </Grid>
-          <Grid item>
-            <GenerateReportButton orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeComparedTo} compareEnabled={compareEnabled}/>
           </Grid>
         </Grid>
       </Grid>
@@ -124,5 +119,4 @@ export const config: RouteConfig = {
   },
 }
 
-console.log('export default AnalyticsPage, which is clearly a function mate', AnalyticsPage)
 export default AnalyticsPage

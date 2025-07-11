@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { Heading, Text } from "@medusajs/ui";
+import { Select as MedusaSelect, Text } from "@medusajs/ui";
 import { CustomAlert } from "../../common/custom-alert";
 import { CurrencyDollar } from "@medusajs/icons";
 import { CircularProgress, Grid } from "@mui/material";
@@ -89,6 +89,12 @@ export const RefundsOverviewCard = ({dateRange, dateRangeCompareTo, compareEnabl
   const { regions, isLoading } = useAdminRegions();
   const [ value , setValue ] = useState<string | undefined>();
   
+  const selectProps = {
+    value: value,
+    onValueChange: setValue,
+    disabled: isLoading || !regions || !regions.length
+  } as any
+
   return (
     <Grid container paddingBottom={2} spacing={3}>
       <Grid item xs={12} md={12}>
@@ -97,21 +103,36 @@ export const RefundsOverviewCard = ({dateRange, dateRangeCompareTo, compareEnabl
               <CurrencyDollar/>
             </Grid>
             <Grid item>
-              <Heading level="h2">
+              <h2>
                 Total refunds
-              </Heading>
+              </h2>
             </Grid>
             <Grid item>
               <div className="w-[256px]">
-                <select className="medusa-select medusa-select--small" onChange={setValue} value={value}>
-                  {isLoading && <CircularProgress/>}
-                  {regions && !regions.length && <Text>No regions</Text>}
-                  {regions && regions.length > 0 && [...new Set(regions.map(region => region.currency_code))].map((currencyCode) => (
-                    <option key={currencyCode} value={currencyCode}>
-                      {currencyCode.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
+                <MedusaSelect {...selectProps}>
+                  <MedusaSelect.Trigger>
+                    <MedusaSelect.Value placeholder={isLoading ? "Loading..." : "Select currency"} />
+                  </MedusaSelect.Trigger>
+                  <MedusaSelect.Content>
+                    {isLoading && (
+                      <div className="flex items-center justify-center p-2">
+                        <CircularProgress size={20} />
+                      </div>
+                    )}
+                    {regions && !regions.length && (
+                      <div className="p-2">
+                        <Text>No regions</Text>
+                      </div>
+                    )}
+                    {regions && regions.length > 0 &&
+                      [...new Set(regions.map(region => region.currency_code))].map((currencyCode) => (
+                        <MedusaSelect.Item key={currencyCode} value={currencyCode}>
+                          {currencyCode.toUpperCase()}
+                        </MedusaSelect.Item>
+                      ))
+                    }
+                  </MedusaSelect.Content>
+                </MedusaSelect>
               </div>
             </Grid>
           </Grid>

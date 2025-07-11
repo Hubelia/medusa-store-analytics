@@ -65,7 +65,6 @@ export const OrdersByNewChart = ({orderStatuses, dateRange, dateRangeCompareTo, 
 
 
   if (isError) {
-    console.log('error', error)
     const trueError = error as any;
     const errorText = `Error when loading data. It shouldn't have happened - please raise an issue. For developer: ${trueError?.response?.data?.message}`
     return <CustomAlert variant="error" children={errorText}/>
