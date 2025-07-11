@@ -11,11 +11,11 @@
  */
 
 import { useState } from 'react';
-import { Text, Switch, Label, Button, IconButton, Checkbox, Heading, Tooltip, Badge } from "@medusajs/ui";
-import { Adjustments, ExclamationCircle } from "@medusajs/icons"
-import { Grid } from "@mui/material";
+import { Text, Switch, Label, Button, IconButton, Checkbox, Badge } from "@medusajs/ui";
+import { Adjustments } from "@medusajs/icons"
 import { DateLasts, OrderStatus } from "../utils/types";
 import type { DateRange } from "../utils/types";
+import { Select } from "@medusajs/ui"
 
 /*
  * Copyright 2024 RSC-Labs, https://rsoftcon.com/
@@ -201,6 +201,12 @@ export const DropdownOrderStatus = ({onOrderStatusChange, appliedStatuses} : {on
 type StringCallback = (value: string) => void;
 
 export const SelectDateLasts = ({dateLast, onSelectChange} : {dateLast: DateLasts, onSelectChange: StringCallback}) => {
+  const [value, setValue] = useState<string | undefined>(DateLasts.LastWeek)
+  
+  const setDropdownValue = (value: string) => {
+    setValue(value)
+    onSelectChange(value)
+  }
 
   const dateLastsToSelect: DateLasts[] = [
     DateLasts.LastWeek,
@@ -211,12 +217,18 @@ export const SelectDateLasts = ({dateLast, onSelectChange} : {dateLast: DateLast
 
   return (
     <div className="w-[170px]">
-      <select className="medusa-select medusa-select--small" onChange={onSelectChange} value={dateLast}>
-        <option value="LastWeek">Last Week</option>
-        <option value="LastMonth">Last Month</option>
-        <option value="LastYear">Last Year</option>
-        <option value="All">All</option>
-      </select>
+      {/* @ts-ignore */}
+      <Select onValueChange={setDropdownValue} value={value}>
+        <Select.Trigger>
+          <Select.Value placeholder="Select a date" />
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Item value={DateLasts.LastWeek}>Last Week</Select.Item>
+          <Select.Item value={DateLasts.LastMonth}>Last Month</Select.Item>
+          <Select.Item value={DateLasts.LastYear}>Last Year</Select.Item>
+          <Select.Item value={DateLasts.All}>All</Select.Item>
+        </Select.Content>
+      </Select>
     </div>
   )
 }

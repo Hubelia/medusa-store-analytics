@@ -26,7 +26,7 @@ import CustomersTab from '../../../ui-components/tabs/customers';
 import { DateLasts, DropdownOrderStatus, OrderStatus, convertDateLastsToComparedDateRange, convertDateLastsToDateRange } from '../../../ui-components';
 import { Grid } from "@mui/material";
 import { ComparedDate, GenerateReportButton, SelectDateLasts, SwitchComparison } from '../../../ui-components/common/overview-components';
-import ProTab from '../../../ui-components/tabs/pro';
+import { useEffect } from 'react';
 
 const AnalyticsPage = () => {
   const [dateLast, setDateLasts] = useState<DateLasts>(DateLasts.LastWeek);
@@ -36,7 +36,12 @@ const AnalyticsPage = () => {
   const dateRange = useMemo(() => convertDateLastsToDateRange(dateLast), [dateLast])
   const dateRangeComparedTo = useMemo(() => convertDateLastsToComparedDateRange(dateLast), [dateLast])
 
+  useEffect(() => {
+    console.log('dateRange', dateRange)
+  }, [dateRange])
+
   function setDateLastsString(select: string) {
+    console.log('select', select)
     switch (select) {
       case DateLasts.LastWeek:
         setDateLasts(DateLasts.LastWeek);
