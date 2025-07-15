@@ -59,8 +59,17 @@ export const VariantsTopTable = ({tableRows} : {tableRows: VariantsTopTableRow[]
                       src={tableRow.thumbnail}
                     />
                   </Grid>}
-                  <Grid item>
-                    {tableRow.productTitle} - {tableRow.variantTitle}
+                  <Grid item sx={{ maxWidth: 350 }}>
+                    <Box
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '100%'
+                      }}
+                    >
+                      {tableRow.productTitle} - {tableRow.variantTitle}
+                    </Box>
                   </Grid>
                 </Grid>
               </Link>

@@ -19,7 +19,6 @@ import {
 } from '..';
 import type { DateRange } from '..';
 import { Grid } from "@mui/material";
-import { OutOfTheStockVariantsCard } from "../products/out_of_the_stock_variants/out-of-the-stock-variants-by-count";
 
 const ProductsTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabled} : 
   {orderStatuses: OrderStatus[], dateRange?: DateRange, dateRangeCompareTo?: DateRange, compareEnabled: boolean}) => {
@@ -33,11 +32,6 @@ const ProductsTab = ({orderStatuses, dateRange, dateRangeCompareTo, compareEnabl
         <Grid item xs={6} md={6} xl={6}>
           <Container>
             <VariantsTopByCountCard orderStatuses={orderStatuses} dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo} compareEnabled={compareEnabled}/>
-          </Container>
-        </Grid>
-        <Grid item xs={6} md={6} xl={6}>
-          <Container>
-            <ReturnedVariantsByCountCard dateRange={dateRange} dateRangeCompareTo={dateRangeCompareTo}/>
           </Container>
         </Grid>
       </Grid> 

@@ -1,6 +1,6 @@
 {
-  "name": "@rsc-labs/medusa-store-analytics",
-  "version": "0.15.0",
+  "name": "@hubelia/medusa-store-analytics",
+  "version": "1.0.0",
   "description": "Get analytics data about your store",
   "author": "RSC Labs (https://rsoftcon.com)",
   "main": "dist/index.js",
@@ -16,6 +16,9 @@
     "analytics",
     "statistics",
     "store"
+  ],
+  "files": [
+    "dist"
   ],
   "scripts": {
     "clean": "cross-env ./node_modules/.bin/rimraf dist",
