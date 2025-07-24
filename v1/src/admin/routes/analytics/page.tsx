@@ -74,11 +74,29 @@ const AnalyticsPage = () => {
 
   function setDateLastsString(select: string) {
     switch (select) {
+      case DateLasts.Today:
+        setDateLasts(DateLasts.Today);
+        break;
+      case DateLasts.ThisWeek:
+        setDateLasts(DateLasts.ThisWeek);
+        break;
+      case DateLasts.ThisMonth:
+        setDateLasts(DateLasts.ThisMonth);
+        break;
+      case DateLasts.ThisYear:
+        setDateLasts(DateLasts.ThisYear);
+        break;
       case DateLasts.LastWeek:
         setDateLasts(DateLasts.LastWeek);
         break;
+      case DateLasts.Last30Days:
+        setDateLasts(DateLasts.Last30Days);
+        break;
       case DateLasts.LastMonth:
         setDateLasts(DateLasts.LastMonth);
+        break;
+      case DateLasts.Last60Days:
+        setDateLasts(DateLasts.Last60Days);
         break;
       case DateLasts.LastYear:
         setDateLasts(DateLasts.LastYear);

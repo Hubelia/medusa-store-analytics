@@ -263,8 +263,13 @@ export const SelectDateLasts = ({dateLast, onSelectChange, onCustomDateRangeChan
   }
 
   const dateLastsToSelect: DateLasts[] = [
+    DateLasts.Today,
+    DateLasts.ThisWeek,
+    DateLasts.ThisMonth,
+    DateLasts.ThisYear,
     DateLasts.LastWeek,
-    DateLasts.LastMonth,
+    DateLasts.Last30Days,
+    DateLasts.Last60Days,
     DateLasts.LastYear,
     DateLasts.All,
     DateLasts.Custom
@@ -280,8 +285,13 @@ export const SelectDateLasts = ({dateLast, onSelectChange, onCustomDateRangeChan
               <Select.Value placeholder="Select a date" />
             </Select.Trigger>
             <Select.Content>
+              <Select.Item value={DateLasts.Today}>Today</Select.Item>
+              <Select.Item value={DateLasts.ThisWeek}>This Week</Select.Item>
+              <Select.Item value={DateLasts.ThisMonth}>This Month</Select.Item>
+              <Select.Item value={DateLasts.ThisYear}>This Year</Select.Item>
               <Select.Item value={DateLasts.LastWeek}>Last Week</Select.Item>
-              <Select.Item value={DateLasts.LastMonth}>Last Month</Select.Item>
+              <Select.Item value={DateLasts.Last30Days}>Last 30 Days</Select.Item>
+              <Select.Item value={DateLasts.Last60Days}>Last 60 Days</Select.Item>
               <Select.Item value={DateLasts.LastYear}>Last Year</Select.Item>
               <Select.Item value={DateLasts.All}>All</Select.Item>
               <Select.Item value={DateLasts.Custom}>Custom</Select.Item>

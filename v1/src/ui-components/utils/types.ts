@@ -37,8 +37,14 @@ export enum OrderStatus {
 
 export enum DateLasts {
   All = "All time",
-  LastMonth = "Last 30 days",
+  Today = "Today",
+  ThisWeek = "This week",
+  ThisMonth = "This month", 
+  ThisYear = "This year",
   LastWeek = "Last 7 days",
+  Last30Days = "Last 30 days",
+  LastMonth = "Last 30 days",
+  Last60Days = "Last 60 days",
   LastYear = "Last 365 days",
   Custom = "Custom"
 }
