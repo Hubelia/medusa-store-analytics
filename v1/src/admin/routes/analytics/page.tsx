@@ -25,16 +25,15 @@ import SalesTab from '../../../ui-components/tabs/sales';
 import CustomersTab from '../../../ui-components/tabs/customers';
 import { DateLasts, DropdownOrderStatus, OrderStatus, convertDateLastsToComparedDateRange, convertDateLastsToDateRange } from '../../../ui-components';
 import { Grid } from "@mui/material";
-import { ComparedDate, GenerateReportButton, SelectDateLasts, SwitchComparison } from '../../../ui-components/common/overview-components';
+import { ComparedDate, GenerateReportButton, SelectDateLasts } from '../../../ui-components/common/overview-components';
 import { useEffect } from 'react';
 import type { DateRange } from '../../../ui-components/utils/types';
 
 const AnalyticsPage = () => {
   const [dateLast, setDateLasts] = useState<DateLasts>(DateLasts.LastWeek);
-  const [compareEnabled, setCompare] = useState<boolean>(true)
+  const compareEnabled = false;
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([OrderStatus.COMPLETED, OrderStatus.PENDING])
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined)
-  const [previousCompareState, setPreviousCompareState] = useState<boolean>(true)
 
   const dateRange = useMemo(() => {
     if (dateLast === DateLasts.Custom && customDateRange) {
@@ -55,19 +54,7 @@ const AnalyticsPage = () => {
     return convertDateLastsToComparedDateRange(dateLast);
   }, [dateLast, customDateRange])
 
-  // Handle compare mode when switching to/from custom date range
-  useEffect(() => {
-    if (dateLast === DateLasts.Custom || dateLast === DateLasts.All) {
-      // Store current compare state before disabling
-      if (compareEnabled) {
-        setPreviousCompareState(compareEnabled);
-              }
-        setCompare(false);
-    } else {
-      // Restore previous compare state when switching away from custom/all
-      setCompare(previousCompareState);
-    }
-  }, [dateLast]);
+  // Compare mode is now always disabled
 
   useEffect(() => {
   }, [dateRange])
@@ -133,10 +120,7 @@ const AnalyticsPage = () => {
       <Grid item xs={12} md={12} xl={12}>
         <Grid container alignItems='center' columnSpacing={6}>
           <Grid item>
-            <SwitchComparison compareEnabled={compareEnabled} onCheckChange={setCompare} allTime={dateLast == DateLasts.All || dateLast == DateLasts.Custom}/>
-          </Grid>
-          <Grid item>
-            <ComparedDate compare={compareEnabled} comparedToDateRange={dateRangeComparedTo}/>
+            <ComparedDate compare={compareEnabled} comparedToDateRange={dateRangeComparedTo} currentDateRange={dateRange}/>
           </Grid>
         </Grid>
       </Grid>

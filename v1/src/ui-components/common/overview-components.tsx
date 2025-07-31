@@ -114,31 +114,22 @@ export const GenerateReportButton = ({orderStatuses, dateRange, dateRangeCompare
   )
 }
 
-export const ComparedDate = ({compare, comparedToDateRange} : {compare: boolean, comparedToDateRange?: DateRange}) => {
-  if (comparedToDateRange && compare) {
+export const ComparedDate = ({compare, comparedToDateRange, currentDateRange} : {compare?: boolean, comparedToDateRange?: DateRange, currentDateRange?: DateRange}) => {
+  if (currentDateRange) {
     return (
       <Text>
-        {`Compared to ${comparedToDateRange.from.toLocaleDateString()} - ${comparedToDateRange.to.toLocaleDateString()}`}
+        {`${currentDateRange.from.toLocaleDateString()} - ${currentDateRange.to.toLocaleDateString()}`}
       </Text>
     );
   }
   return (
     <Text>
-      {`No comparison`}
+      {`No period selected`}
     </Text>
   ); 
 }
 
 type BooleanCallback = (value: boolean) => any;
-
-export const SwitchComparison = ({compareEnabled, onCheckChange, allTime} : {compareEnabled: boolean, onCheckChange: BooleanCallback, allTime: boolean}) => {
-  return (
-    <div className="flex items-center gap-x-2">
-      <Switch id="manage-inventory" onCheckedChange={onCheckChange} disabled={allTime} checked={compareEnabled && !allTime}/>
-      <Label htmlFor="manage-inventory">Compare</Label>
-    </div>
-  )
-}
 
 type OrderStatusCallback = (value: OrderStatus[]) => any;
 

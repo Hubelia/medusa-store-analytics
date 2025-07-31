@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-export { ComparedDate, SwitchComparison, DropdownOrderStatus, SelectDateLasts, GenerateReportButton } from './common/overview-components';
+export { ComparedDate, DropdownOrderStatus, SelectDateLasts, GenerateReportButton } from './common/overview-components';
 
 export { OrdersOverviewCard } from './orders/orders-overview-card'
 export { OrdersPaymentProviderCard } from './orders/orders-payment-provider-card'
